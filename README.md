@@ -1,66 +1,169 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Project Documentation
 
-## About Laravel
+## 1. Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The application will be a Appointment Management System that allows patients to book appointments with doctors, make payments, and shedule appointment ,doctor review. The key features are:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1.1 Minimum Viable Product (MVP)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **User Registration and Authentication:**
+  - Users (patients, doctors, admin) must be able to register, log in, and authenticate.
+  
+- **Patient Appointment Booking:**
+  - Patients can view available time slots for doctors and book appointments.
+  
+- **Doctor Schedule Management:**
+  - Doctors can manage their availability by creating and updating appointment slots.
+  
+- **Reviews:**
+  - Doctors can leave reviews on User medical health after an appointment is completed.
+  
+- **Payment System:**
+  - Patients can make payments for their appointments.
+  
+- **Appointment Status:**
+  - Patients can view the status of their appointments (e.g., Pending, Completed, Rescheduled).
+  
+- **Admin Role:**
+  - Admins can manage users, appointments, and reviews.
 
-## Learning Laravel
+## 2. Database Schema
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The database schema is designed to support the core features of the appointment system. Below is an outline of the schema.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 2.1 User Table
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Table Name**: `users`
 
-## Laravel Sponsors
+| Field      | Type     | Description                                    |
+|------------|----------|------------------------------------------------|
+| `id`       | INT      | Primary Key, unique user identifier            |
+| `name`     | VARCHAR  | Name of the user                               |
+| `email`    | VARCHAR  | Email address of the user                      |
+| `password` | VARCHAR  | User password                                  |
+| `phone`    | VARCHAR  | User phone number                              |
+| `role`     | ENUM(A, P, D) | Role of the user (Admin, Patient, Doctor) |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Roles**:
+  - `A` = Admin
+  - `P` = Patient
+  - `D` = Doctor
 
-### Premium Partners
+### 2.2 Patients Table
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+**Table Name**: `patients`
 
-## Contributing
+| Field     | Type     | Description                                     |
+|-----------|----------|-------------------------------------------------|
+| `id`      | INT      | Primary Key, unique patient identifier          |
+| `user_id` | INT      | Foreign Key (users.id), links to the User table |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 2.3 Doctor Table
 
-## Code of Conduct
+**Table Name**: `doctors`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Field            | Type     | Description                                     |
+|------------------|----------|-------------------------------------------------|
+| `id`             | INT      | Primary Key, unique doctor identifier           |
+| `user_id`        | INT      | Foreign Key (users.id), links to the User table |
+| `qualification`  | VARCHAR  | Doctor's qualifications                         |
+| `specialization` | VARCHAR  | Doctor's area of specialization                 |
+| `department`     | VARCHAR  | Department of the doctor                        |
 
-## Security Vulnerabilities
+### 2.4 Reviews Table
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Table Name**: `reviews`
 
-## License
+| Field            | Type     | Description                                                   |
+|------------------|----------|---------------------------------------------------------------|
+| `id`             | INT      | Primary Key, unique review identifier                         |
+| `appointments_id`| INT      | Foreign Key (appointments.id), links to the Appointment table |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 2.5 Patient History Table
+
+**Table Name**: `patient_history`
+
+| Field            | Type     | Description                                                   |
+|------------------|----------|---------------------------------------------------------------|
+| `id`             | INT      | Primary Key, unique record identifier                         |
+| `patient_id`     | INT      | Foreign Key (patients.id), links to the Patient table         |
+| `appointment_id` | INT      | Foreign Key (appointments.id), links to the Appointment table |
+| `review_id`      | INT      | Foreign Key (reviews.id), links to the Review table           |
+| `payment_id`     | INT      | Foreign Key (payment.id), links to the Payment table          |
+
+### 2.6 Schedule Table
+
+**Table Name**: `schedule`
+
+| Field           | Type     | Description                                                   |
+|-----------------|----------|---------------------------------------------------------------|
+| `id`            | INT      | Primary Key, unique schedule identifier                       |
+| `appointment_id`| INT      | Foreign Key (appointments.id), links to the Appointment table |
+
+### 2.7 Appointments Table
+
+**Table Name**: `appointments`
+
+| Field          | Type          | Description                                                           |
+|----------------|---------------|-----------------------------------------------------------------------|
+| `id`           | INT           | Primary Key, unique appointment identifier                            |
+| `patient_id`   | INT           | Foreign Key (patients.id), links to the Patient table                 |
+| `doctor_id`    | INT           | Foreign Key (doctors.id), links to the Doctor table                   |
+| `date`         | DATE          | Date of the appointment                                               |
+| `review`       | TEXT          | Optional review provided by the patient                               |
+| `status`       | ENUM(P, C, R) | Appointment status (P = Pending, C = Completed, R = Rescheduled)      |
+| `next_visit`   | DATE          | Optional date for the next visit                                      |
+
+### 2.8 Payment Table
+
+**Table Name**: `payment`
+
+| Field           | Type       | Description                                                   |
+|-----------------|------------|---------------------------------------------------------------|
+| `id`            | INT        | Primary Key, unique payment identifier                        |
+| `patient_id`    | INT        | Foreign Key (patients.id), links to the Patient table         |
+| `appointment_id`| INT        | Foreign Key (appointments.id), links to the Appointment table |
+| `status`        | ENUM(P, F) | Payment status (P = Paid, F = Failed)                         |
+
+### 2.9 Appointments Slot Table
+
+**Table Name**: `appointments_slot`
+
+| Field          | Type       | Description                                         |
+|----------------|------------|-----------------------------------------------------|
+| `id`           | INT        | Primary Key, unique slot identifier                 |
+| `doctor_id`    | INT        | Foreign Key (doctors.id), links to the Doctor table |
+| `date`         | DATE       | Date of the available appointment slot              |
+| `start_time`   | TIME       | Start time of the appointment slot                  |
+| `end_time`     | TIME       | End time of the appointment slot                    |
+| `status`       | ENUM(B, A) | Slot status (B = Booked, A = Available)             |
+
+## 3. Problem to Be Solved
+
+The system addresses several problems commonly encountered in healthcare management:
+
+1. **Appointment Scheduling**:
+   - Patients often struggle to find available doctors and schedule appointments, while doctors may have difficulty managing their available times.
+   - The system allows patients to view available time slots, while doctors can manage their availability.
+
+2. **Patient-Doctor Interaction**:
+   - After an appointment, there is often no formalized way to provide feedback about the doctor's performance or the quality of the visit.
+   - Reviews allow patients to leave feedback on their experience, providing valuable information for other patients.
+
+3. **Payment Management**:
+   - Managing payments manually can lead to errors and confusion for both patients and doctors.
+   - The payment system ensures that patients can easily make payments for their appointments and track their payment status.
+
+4. **Medical History Tracking**:
+   - Keeping track of patient history (appointments, reviews, payments) is essential for providing high-quality care.
+   - The system links patients' appointments, reviews, and payments to build a comprehensive patient history.
+
+5. **Role-Based Access Control**:
+   - Different users (patients, doctors, admins) have different needs and permissions within the system.
+   - The role-based access control ensures that users only see and interact with data relevant to their role.
+
+## Conclusion
+
+This system helps improve the efficiency and transparency of medical appointment scheduling, review management, and payment processing, benefiting both patients and healthcare providers.
