@@ -14,7 +14,7 @@ class UserCreateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -29,7 +29,7 @@ class UserCreateRequest extends FormRequest
             'l_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string'],
             'address' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed'],
+            'password' => ['required'],
             'email' => [
                 'required',
                 'string',
