@@ -47,7 +47,7 @@
                                 <input type="email" id="email" name="email"
                                     value="{{ old('email', $user->email) }}"
                                     class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    required>
+                                    required readonly>
                                 @error('email')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror

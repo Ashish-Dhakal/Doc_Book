@@ -55,15 +55,15 @@ class UserController extends Controller
 
         if ($user->roles == 'patient') {
             Patient::create([
-                'user_id' => $user->id,  
+                'user_id' => $user->id,
             ]);
         }
         if ($user->roles == 'doctor') {
             Doctor::create([
-                'user_id' => $user->id,  
+                'user_id' => $user->id,
             ]);
         }
-      
+
 
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
@@ -90,9 +90,10 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UserUpdateRequest $request, string $id) 
+    public function update(UserUpdateRequest $request, string $id)
     {
         $user = User::find($id);
+
         $user->update([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
@@ -104,17 +105,32 @@ class UserController extends Controller
         ]);
 
         if ($user->roles == 'patient') {
-            Patient::create([
-                'user_id' => $user->id,  
-            ]);
+            $patient = Patient::where('user_id', $user->id)->first();
+
+            if ($patient) {
+                $patient->update([
+                    'user_id' => $user->id,
+                ]);
+            } else {
+               return redirect()->back()->with('error', 'Patient not found');
+            }
         }
+
         if ($user->roles == 'doctor') {
-            Doctor::create([
-                'user_id' => $user->id,  
-            ]);
+            $doctor = Doctor::where('user_id', $user->id)->first();
+
+            if ($doctor) {
+                $doctor->update([
+                    'user_id' => $user->id,
+                ]);
+            } else {
+                return redirect()->back()->with('error', 'Doctor not found');
+            }
         }
+
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
+
 
     /**
      * Remove the specified resource from storage.
