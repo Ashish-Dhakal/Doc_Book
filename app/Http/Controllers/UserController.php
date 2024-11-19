@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -11,7 +12,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $data['users'] = User::all();
+        return view('users.index', $data);
     }
 
     /**
@@ -19,7 +21,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view('users.create');
     }
 
     /**
@@ -35,7 +37,8 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $user = User::find($id);
+        return view('users.show', compact('user'));
     }
 
     /**
@@ -43,7 +46,8 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::find($id);
+        return view('users.edit', compact('user'));
     }
 
     /**
@@ -51,7 +55,9 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // $validated = $request->validate([
+        //     'f_name' => 'required',
+        // ])
     }
 
     /**
@@ -59,6 +65,7 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::find($id);
+        $user->delete();
     }
 }

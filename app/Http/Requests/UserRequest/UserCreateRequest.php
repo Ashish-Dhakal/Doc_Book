@@ -1,13 +1,22 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\UserRequest;
 
 use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ProfileUpdateRequest extends FormRequest
+
+class UserCreateRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return false;
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -20,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             'l_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string'],
             'address' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'confirmed'],
             'email' => [
                 'required',
                 'string',
