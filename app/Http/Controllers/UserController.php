@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Patient;
+use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest\UserCreateRequest;
 use App\Http\Requests\UserRequest\UserUpdateRequest;
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Models\Doctor;
 
 class UserController extends Controller
 {
@@ -41,7 +43,7 @@ class UserController extends Controller
         //     'password' => 'required|min:8',
         //     ]);
 
-        User::create([
+        $user = User::create([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
             'phone' => $request->phone,
@@ -50,6 +52,20 @@ class UserController extends Controller
             'roles' => $request->roles,
             'password' => bcrypt($request->password),
         ]);
+
+        if ($user->roles == 'patient') {
+            Patient::create([
+                'user_id' => $user->id,  
+            ]);
+        }
+        if ($user->roles == 'doctor') {
+            Doctor::create([
+                'user_id' => $user->id,  
+            ]);
+        }
+      
+
+
         return redirect()->route('users.index')->with('success', 'User created successfully');
     }
 
@@ -86,6 +102,17 @@ class UserController extends Controller
             'roles' => $request->roles,
             'password' => bcrypt($request->password),
         ]);
+
+        if ($user->roles == 'patient') {
+            Patient::create([
+                'user_id' => $user->id,  
+            ]);
+        }
+        if ($user->roles == 'doctor') {
+            Doctor::create([
+                'user_id' => $user->id,  
+            ]);
+        }
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
 
@@ -96,5 +123,7 @@ class UserController extends Controller
     {
         $user = User::find($id);
         $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }
 }
