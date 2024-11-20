@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AppointmentSlotController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Models\AppointmentSlot;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,6 +25,8 @@ Route::middleware('auth')->group(function () {
 
     // route for creatind user
     Route::resource('/users', UserController::class);
+    Route::resource('/appointment-slots', AppointmentSlotController::class);
+    Route::resource('/appointments', AppointmentController::class);
 });
 
 require __DIR__.'/auth.php';
