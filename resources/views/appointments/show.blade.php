@@ -16,11 +16,11 @@
                 <table class="min-w-full table-auto border-separate border-spacing-4">
                     <tr>
                         <th class="text-left font-medium text-gray-700">Patient</th>
-                        <td class="text-gray-800">{{ $appointment->patient->name }}</td>
+                        <td class="text-gray-800">{{ $appointment->patient->user->f_name }} {{ $appointment->patient->user->l_name }}</td>
                     </tr>
                     <tr>
                         <th class="text-left font-medium text-gray-700">Doctor</th>
-                        <td class="text-gray-800">{{ $appointment->doctor->name }}</td>
+                        <td class="text-gray-800">{{ $appointment->doctor->user->f_name }} {{ $appointment->doctor->user->l_name }}</td>
                     </tr>
                     <tr>
                         <th class="text-left font-medium text-gray-700">Date</th>
@@ -28,11 +28,15 @@
                     </tr>
                     <tr>
                         <th class="text-left font-medium text-gray-700">Time</th>
-                        <td class="text-gray-800">{{ $appointment->time }}</td>
+                        <td class="text-gray-800">{{ $appointment->start_time }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-left font-medium text-gray-700">Time</th>
+                        <td class="text-gray-800">{{ $appointment->end_time }}</td>
                     </tr>
                     <tr>
                         <th class="text-left font-medium text-gray-700">Status</th>
-                        <td class="text-gray-800 capitalize">{{ ucfirst($appointment->status) }}</td>
+                        <td class="text-gray-800 capitalize">{{ ($appointment->status) }}</td>
                     </tr>
                 </table>
 

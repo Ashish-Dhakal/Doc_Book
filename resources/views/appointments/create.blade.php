@@ -5,7 +5,6 @@
         </h2>
     </x-slot>
 
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -16,9 +15,7 @@
                         @csrf
 
                         @can('admin_access')
-
-
-                            <!-- Doctor Dropdown -->
+                            <!-- Patient Dropdown -->
                             <div class="mb-4">
                                 <label for="patient_id" class="block text-sm font-medium text-gray-700">Patient</label>
                                 <select name="patient_id" id="patient_id"
@@ -29,8 +26,10 @@
                                             {{ $patient->user->l_name }}</option>
                                     @endforeach
                                 </select>
+                                @error('patient_id')
+                                    <div class="text-red-600 text-sm mt-2">{{ $message }}</div>
+                                @enderror
                             </div>
-
                         @endcan
 
                         <!-- Doctor Dropdown -->
@@ -44,34 +43,44 @@
                                         {{ $doctor->user->l_name }}</option>
                                 @endforeach
                             </select>
+                            @error('doctor_id')
+                                <div class="text-red-600 text-sm mt-2">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <!-- Date Input -->
                         <div class="mb-4">
-                            <label for="date" class="block text-sm font-medium text-gray-700">Appointment
-                                Date</label>
+                            <label for="date" class="block text-sm font-medium text-gray-700">Appointment Date</label>
                             <input type="date" name="date" id="date"
                                 class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
+                            @error('date')
+                                <div class="text-red-600 text-sm mt-2">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        <!-- Time Input -->
+                        <!-- Start Time Input -->
                         <div class="mb-4">
-                            <label for="start_time" class="block text-sm font-medium text-gray-700">Start
-                                Time</label>
+                            <label for="start_time" class="block text-sm font-medium text-gray-700">Start Time</label>
                             <input type="time" name="start_time" id="start_time"
                                 class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required>
+                            @error('start_time')
+                                <div class="text-red-600 text-sm mt-2">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        <!-- Time Input -->
+                        <!-- End Time Input -->
                         <div class="mb-4">
-                            <label for="end_time" class="block text-sm font-medium text-gray-700">End
-                                Time</label>
+                            <label for="end_time" class="block text-sm font-medium text-gray-700">End Time</label>
                             <input type="time" name="end_time" id="end_time"
                                 class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required>
+                            @error('end_time')
+                                <div class="text-red-600 text-sm mt-2">{{ $message }}</div>
+                            @enderror
                         </div>
+
                         <!-- Submit Button -->
                         <div>
                             <button type="submit"

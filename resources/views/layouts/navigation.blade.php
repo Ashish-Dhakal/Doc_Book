@@ -24,26 +24,43 @@
                     </x-nav-link>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('appointment-slots.index')" :active="request()->routeIs('appointment-slots.index')">
-                        {{ __('Doctor Appointment Slot') }}
-                    </x-nav-link>
-                </div>
+                @canany(['admin_access', 'doctor_access'])
+                    <!-- Navigation Links -->
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('appointment-slots.index')" :active="request()->routeIs('appointment-slots.index')">
+                            {{ __('Doctor Appointment Slot') }}
+                        </x-nav-link>
+                    </div>
+                @endcanany
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.index')">
-                        {{ __('Book Appointment') }}
-                    </x-nav-link>
-                </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
-                        {{ __('Users') }}
-                    </x-nav-link>
-                </div>
+                @canany(['admin_access', 'patient_access'])
+                    <!-- Navigation Links -->
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.index')">
+                            {{ __('Book Appointment') }}
+                        </x-nav-link>
+                    </div>
+                @endcanany
+
+
+                @canany('admin_access')
+                    <!-- Navigation Links -->
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
+                            {{ __('Users') }}
+                        </x-nav-link>
+                    </div>
+                @endcanany
+
+                @canany('doctor_access')
+                    <!-- Navigation Links -->
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('appointments.index')" :active="request()->routeIs('appointments.index')">
+                            {{ __('Appointments') }}
+                        </x-nav-link>
+                    </div>
+                @endcanany
             </div>
 
             <!-- Settings Dropdown -->

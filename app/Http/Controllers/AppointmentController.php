@@ -7,6 +7,7 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
+use App\Models\AppointmentSlot;
 use Illuminate\Support\Facades\Auth;
 
 class AppointmentController extends Controller
@@ -18,20 +19,21 @@ class AppointmentController extends Controller
     {
         $userId = Auth::user()->id;
         $patient = Patient::where('user_id', $userId)->first();
+        $doctorId = Doctor::where('user_id' , $userId)->first();
 
-        // diaplay the appointments of the patient
-        if ($patient) {
+        if($patient){
             $data['appointments'] = Appointment::where('patient_id', $patient->id)->get();
         }
-        // diaplay the appointments of the admin
-        else {
-            if (Auth::user()->roles == 'admin') {
-                $data['appointments'] = Appointment::all();
+        elseif(Auth::user()->roles == 'admin'){
+            $data['appointments'] = Appointment::all();
+        }
+        elseif(Auth::user()->roles == 'doctor'){
+            $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
+              ->where('status', 'booked')
+                ->get();
             }
-            // diaplay the appointments of the doctor
-            elseif (Auth::user()->roles == 'doctor') {
-                $data['appointments'] = Appointment::where('doctor_id', Auth::user()->id)->get();
-            }
+        else{
+            return redirect()->route('login');
         }
 
         return view('appointments.index', $data);
@@ -59,8 +61,6 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
 
-        // dd($request->toArray());
-
         $request->validate([
             'doctor_id' => 'required',
             'date' => 'required',
@@ -74,9 +74,6 @@ class AppointmentController extends Controller
             }],
         ]);
 
-        // dd('request muni');
-
-
         // Get the input times (24-hour format)
         $startTime = $request->input('start_time');
         $endTime = $request->input('end_time');
@@ -85,13 +82,45 @@ class AppointmentController extends Controller
         $startTimeCarbon = Carbon::createFromFormat('H:i', $startTime);
         $endTimeCarbon = Carbon::createFromFormat('H:i', $endTime);
 
-        // dd($startTimeCarbon, $endTimeCarbon);
 
-        // Check if end time is before start time
         if ($endTimeCarbon->lt($startTimeCarbon)) {
-            // If end time is earlier than start time, return an error response
             return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
         }
+
+
+        // check if the doctor is availabelin that time or not
+        $doctorId = $request->input('doctor_id'); // get the doctor id
+        $date = $request->input('date'); // get the date
+        // $appointmentSlots = AppointmentSlot::where('doctor_id', $doctorId)
+        //     ->where('date', $date)
+        //     ->where('start_time', '<=', $startTime)
+        //     ->where('end_time', '>=', $endTime)
+        //     ->where(function ($query) {
+        //         $query->where('status', 'unavailable')
+        //             ->orWhere('status', 'booked');
+        //     })
+        //     ->first();
+
+
+        $appointmentSlots = AppointmentSlot::where('doctor_id', $doctorId)
+            ->where('date', $date)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where(function ($subQuery) use ($startTime, $endTime) {
+                    $subQuery->where('status',['unavailable','booked'])
+                        ->where(function ($timeQuery) use ($startTime, $endTime) {
+                            
+                            $timeQuery->where('start_time', '<', $endTime) 
+                                ->where('end_time', '>', $startTime); 
+                        });
+                });
+            })
+            ->first();
+        if ($appointmentSlots) {
+            return redirect()->back()->withErrors(['start_time' => 'Doctor is not available in that time.']);
+        }
+
+
+
         if (Auth::user()->roles == 'patient') {
             $userId = Auth::user()->id;
             $patient = Patient::where('user_id', $userId)->first();
@@ -105,13 +134,13 @@ class AppointmentController extends Controller
             $appointment->save();
             return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
         } elseif (Auth::user()->roles == 'admin') {
-            dd('admin bhitra');
             $appointment = new Appointment();
             $appointment->patient_id = $request->input('patient_id');
             $appointment->doctor_id = $request->input('doctor_id');
             $appointment->date = $request->input('date');
             $appointment->start_time = $request->input('start_time');
             $appointment->end_time = $request->input('end_time');
+            $appointment->status = 'booked';
             $appointment->save();
             return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
         } else {
@@ -125,6 +154,9 @@ class AppointmentController extends Controller
     public function show($id)
     {
         $appointment = Appointment::find($id);
+        if (!$appointment) {
+            abort(404);
+        }
         return view('appointments.show', compact('appointment'));
     }
 
