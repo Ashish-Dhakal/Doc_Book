@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Doctor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
 
@@ -38,6 +39,21 @@ class AppointmentSlotController extends Controller
             'end_time' => 'required',
             'status' => 'required',
         ]);
+
+        // Get the input times (24-hour format)
+        $startTime = $request->input('start_time');
+        $endTime = $request->input('end_time');
+
+        // Convert the times to Carbon instances (don't format to 12-hour yet)
+        $startTimeCarbon = Carbon::createFromFormat('H:i', $startTime);
+        $endTimeCarbon = Carbon::createFromFormat('H:i', $endTime);
+
+
+        // Check if end time is before start time
+        if ($endTimeCarbon->lt($startTimeCarbon)) {
+            // If end time is earlier than start time, return an error response
+            return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
+        }
 
         $appointmentSlot = new AppointmentSlot();
         $appointmentSlot->doctor_id = $request->input('doctor_id');

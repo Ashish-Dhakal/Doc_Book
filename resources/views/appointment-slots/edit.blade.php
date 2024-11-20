@@ -82,6 +82,9 @@
                                     <option value="booked"
                                         {{ old('status', $appointmentSlot->status) == 'booked' ? 'selected' : '' }}>
                                         Booked</option>
+                                    <option value="unavailable"
+                                        {{ old('status', $appointmentSlot->status) == 'unavailable' ? 'selected' : '' }}>
+                                        Unavailable</option>
                                 </select>
                                 @error('status')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

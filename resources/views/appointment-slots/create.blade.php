@@ -38,7 +38,7 @@
                                 <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
                                 <input type="date" id="date" name="date" value="{{ old('date') }}"
                                     class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    required>
+                                    required min="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
                                 @error('date')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
