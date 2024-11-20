@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('specialization')->nullable();
             $table->string('department')->nullable();
             $table->integer('experience')->default(0);
-            $table->integer('qualification')->default(0);
+            $table->string('qualification')->default(0);
             $table->timestamps();
         });
     }

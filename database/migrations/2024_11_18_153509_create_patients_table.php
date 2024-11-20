@@ -16,6 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->unique();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('medical_history')->nullable();
+            $table->string('allergies')->nullable();
+            $table->string('medications')->nullable();
+            $table->string('blood_group')->nullable();
             $table->timestamps();
         });
     }
