@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
 
         ]);
 
-        $speciality = Speciality::firstOrCreate([
+        $speciality = Speciality::create([
             'name' => 'Cardiology',
         ]);
 

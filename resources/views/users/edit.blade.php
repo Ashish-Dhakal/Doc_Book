@@ -64,19 +64,39 @@
                             <!-- Role -->
                             <div>
                                 <label for="roles" class="block text-sm font-medium text-gray-700">Role</label>
-                                <select id="roles" name="roles"
-                                    class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="admin"
-                                        {{ old('roles', $user->roles) == 'admin' ? 'selected' : '' }}>Admin</option>
-                                    <option value="patient"
-                                        {{ old('roles', $user->roles) == 'patient' ? 'selected' : '' }}>Patient</option>
-                                    <option value="doctor"
-                                        {{ old('roles', $user->roles) == 'doctor' ? 'selected' : '' }}>Doctor</option>
-                                </select>
+                                <input type="text" id="roles" name="roles"
+                                    value="{{ old('roles', $user->roles) }}"
+                                    class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    readonly>
                                 @error('roles')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            @if ($user->roles == 'doctor')
+                                <div>
+                                    <div>
+                                        <label for="specility"
+                                            class="block text-sm font-medium text-gray-700">Role</label>
+                                        <select id="specility" name="speciality_id"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="">Select Specialization</option>
+                                            @foreach ($specialities as $speciality)
+                                                <option value="{{ $speciality->id }}"
+                                                    {{ old('roles') == $speciality->id ? 'selected' : '' }}>
+                                                    {{ $speciality->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('speciality_id')
+                                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    @error('speciality_id')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
+
 
                             <!-- Phone -->
                             <div>

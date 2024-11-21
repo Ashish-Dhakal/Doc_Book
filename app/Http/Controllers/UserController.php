@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Speciality;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest\UserCreateRequest;
 use App\Http\Requests\UserRequest\UserUpdateRequest;
-use App\Models\Doctor;
 
 class UserController extends Controller
 {
@@ -25,7 +26,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $data['specialities'] = Speciality::all();
+        return view('users.create',$data);
     }
 
     /**
@@ -33,16 +35,6 @@ class UserController extends Controller
      */
     public function store(UserCreateRequest $request)
     {
-        // $validated = $request->validate([
-        //     'f_name' => 'required',
-        //     'l_name' => 'required',
-        //     'phone' => 'required',
-        //     'address' => 'required',
-        //     'email' => 'required|email|unique:users',
-        //     'roles' => 'required',
-        //     'password' => 'required|min:8',
-        //     ]);
-
         $user = User::create([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
@@ -56,11 +48,13 @@ class UserController extends Controller
         if ($user->roles == 'patient') {
             Patient::create([
                 'user_id' => $user->id,
+
             ]);
         }
         if ($user->roles == 'doctor') {
             Doctor::create([
                 'user_id' => $user->id,
+                'speciality_id' => $request->speciality_id,
             ]);
         }
 
@@ -84,7 +78,8 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $user = User::find($id);
-        return view('users.edit', compact('user'));
+        $specialities = Speciality::all();
+        return view('users.edit', compact('user','specialities'));
     }
 
     /**
@@ -122,6 +117,7 @@ class UserController extends Controller
             if ($doctor) {
                 $doctor->update([
                     'user_id' => $user->id,
+                    'speciality_id' => $request->speciality_id,
                 ]);
             } else {
                 return redirect()->back()->with('error', 'Doctor not found');

@@ -26,12 +26,10 @@ Route::middleware('auth')->group(function () {
 
 
     // route for creatind user
-    Route::resource('/users', UserController::class);
+    Route::resource('/users', UserController::class)->middleware('role:admin');
     Route::resource('/appointment-slots', AppointmentSlotController::class)->middleware('role:admin,doctor');
     Route::resource('/appointments', AppointmentController::class);
-    Route::resource('specializations', SpecialityController::class);
-
-    Route::post('/specializations/{speciality}/assign', [SpecialityController::class, 'assign'])->name('specializations.assign');
+    Route::resource('/specializations', SpecialityController::class)->middleware('role:admin');
 
 });
 

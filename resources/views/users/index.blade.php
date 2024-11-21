@@ -34,7 +34,10 @@
                                     <td class="px-6 py-4">{{ $user->f_name }}</td>
                                     <td class="px-6 py-4">{{ $user->l_name }}</td>
                                     <td class="px-6 py-4">{{ $user->email }}</td>
-                                    <td class="px-6 py-4">{{ $user->roles }}</td>
+                                    <td class="px-6 py-4">{{ $user->roles }} 
+                                        @if ($user->roles == 'doctor')
+                                            ( {{ $user->doctor->speciality_id }} )
+                                        @endif
                                     <td class="px-6 py-4">
                                         <a href="{{ route('users.show', $user) }}" class="text-blue-500">View</a> | 
                                         <a href="{{ route('users.edit', $user) }}" class="text-yellow-500">Edit</a> | 
