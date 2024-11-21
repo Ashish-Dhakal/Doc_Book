@@ -6,6 +6,7 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Speciality;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -36,11 +37,15 @@ class DatabaseSeeder extends Seeder
 
         ]);
 
+        $speciality = Speciality::firstOrCreate([
+            'name' => 'Cardiology',
+        ]);
+
         Doctor::create([
             'user_id' => $doctor->id,
             'experience' => 10,
             'qualification' => 'MBBS',
-            'specialization' => 'Cardiology',
+            'speciality_id' => $speciality->id, 
             'department' => 'Cardiology',
         ]);
 

@@ -51,6 +51,13 @@
                             {{ __('Users') }}
                         </x-nav-link>
                     </div>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('specializations.index')" :active="request()->routeIs('specializations.index')">
+                            {{ __('Specialization') }}
+                        </x-nav-link>
+                    </div>
                 @endcanany
 
                 @canany('doctor_access')

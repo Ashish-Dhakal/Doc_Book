@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('specialization')->nullable();
+            $table->unsignedBigInteger('speciality_id');
             $table->string('department')->nullable();
             $table->integer('experience')->default(0);
-            $table->string('qualification')->default(0);
+            $table->string('qualification')->nullable();
             $table->timestamps();
+            
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('speciality_id')->references('id')->on('specialities')->onDelete('cascade');
         });
     }
 

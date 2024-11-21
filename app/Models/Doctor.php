@@ -27,4 +27,9 @@ class Doctor extends Model
     {
         return $this->hasMany(PatientHistory::class);
     }
+
+    public function speciality()
+    {
+        return $this->belogsTo(Speciality::class);
+    }
 }

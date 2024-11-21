@@ -5,6 +5,7 @@ use App\Http\Controllers\AppointmentSlotController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SpecialityController;
 use App\Http\Middleware\RoleCheckMiddleware;
 use App\Models\AppointmentSlot;
 
@@ -28,6 +29,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('/users', UserController::class);
     Route::resource('/appointment-slots', AppointmentSlotController::class)->middleware('role:admin,doctor');
     Route::resource('/appointments', AppointmentController::class);
+    Route::resource('specializations', SpecialityController::class);
+
+    Route::post('/specializations/{speciality}/assign', [SpecialityController::class, 'assign'])->name('specializations.assign');
+
 });
 
 require __DIR__.'/auth.php';
