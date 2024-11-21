@@ -9,14 +9,21 @@ use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 class AppointmentController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+
+        $this->authorize('viewAny', Appointment::class);
+
+
         $userId = Auth::user()->id;
         $patient = Patient::where('user_id', $userId)->first();
         $doctorId = Doctor::where('user_id' , $userId)->first();
@@ -60,6 +67,7 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->toArray());
 
         $request->validate([
             'doctor_id' => 'required',
@@ -165,9 +173,22 @@ class AppointmentController extends Controller
      */
     public function edit($id)
     {
-        $data['doctors'] = Doctor::all();
-        $data['appointment'] = Appointment::find($id);
-        return view('appointments.edit', $data);
+        $patient = Patient::where('user_id', Auth::user()->id)->first(); // Retrieve the patient data
+
+        if ($patient || Auth::user()->roles == 'admin') {
+            $appointment = Appointment::find($id);
+
+            // Check if the appointment exists and if the user is either the patient or an admin
+            if ($appointment && ($appointment->patient_id == ($patient ? $patient->id : null) || Auth::user()->roles == 'admin')) {
+                $data['doctors'] = Doctor::all();
+                $data['appointment'] = $appointment;
+                return view('appointments.edit', $data);
+            } else {
+                abort(403, 'You are not authorized to edit this appointment');
+            }
+        } else {
+            abort(403, 'You are not authorized to edit this appointment');
+        }
     }
 
     /**

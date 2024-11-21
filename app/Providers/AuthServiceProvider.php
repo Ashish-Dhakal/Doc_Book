@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Appointment;
+use App\Policies\AppointmentPolicy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,11 +18,17 @@ class AuthServiceProvider extends ServiceProvider
         //
     }
 
+    protected $policies = [
+        Appointment::class => AppointmentPolicy::class,
+    ];
+
     /**
      * Bootstrap services.
      */
     public function boot(): void
     {
+        $this->registerPolicies();
+
         Gate::define('admin_access', function ($user) {
             return $user->roles === 'admin';
         });
