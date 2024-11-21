@@ -31,6 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('/appointments', AppointmentController::class);
     Route::resource('/specializations', SpecialityController::class)->middleware('role:admin');
 
+
+    Route::post('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
+
+
 });
 
 require __DIR__.'/auth.php';

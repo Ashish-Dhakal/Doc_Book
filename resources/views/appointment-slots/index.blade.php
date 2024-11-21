@@ -37,8 +37,8 @@
                                     <td class="px-6 py-3 text-sm text-gray-900">{{ $slot->doctor->user->f_name }}
                                         {{ $slot->doctor->user->l_name }}</td>
                                     <td class="px-6 py-3 text-sm text-gray-900">{{ $slot->date }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-900">{{ $slot->start_time }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-900">{{ $slot->end_time }}</td>
+                                    <td class="px-6 py-3 text-sm text-gray-900">{{ \Carbon\Carbon::parse($slot->start_time)->format('g:i A') }}</td>
+                                    <td class="px-6 py-3 text-sm text-gray-900">{{ \Carbon\Carbon::parse($slot->end_time)->format('g:i A') }}</td>
                                     <td class="px-6 py-3 text-sm text-gray-900 capitalize">{{ $slot->status }}</td>
                                     <td class="px-6 py-3 text-sm">
                                         <a href="{{ route('appointment-slots.show', $slot->id) }}"

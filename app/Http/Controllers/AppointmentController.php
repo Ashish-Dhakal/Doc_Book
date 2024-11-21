@@ -214,4 +214,42 @@ class AppointmentController extends Controller
     {
         //
     }
+
+
+
+    public function updateStatus(Request $request, Appointment $appointment , AppointmentSlot $appointmentSlot)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,booked,rescheduled,cancelled,completed',  
+        ]);
+        $status = $request->status;
+
+        switch ($status) {
+            case 'pending':
+                $appointment->status = 'pending';
+                break;
+            case 'booked':
+                $appointment->status = 'booked';
+                $appointmentSlot->status = 'booked';
+                $appointmentSlot->start_time = $appointment->start_time;
+                $appointmentSlot->doctor_id = $appointment->doctor_id;
+                $appointmentSlot->end_time = $appointment->end_time;
+                $appointmentSlot->date = $appointment->date;
+                $appointmentSlot->save();
+                break;
+            case 'rescheduled':
+                $appointment->status = 'rescheduled';
+                break;
+            case 'cancelled':
+                $appointment->status = 'cancelled';
+                break;
+            case 'completed':
+                $appointment->status = 'completed';
+                break;
+            default:
+                $appointment->status = 'pending';
+        }   
+        $appointment->save();
+        return redirect()->route('appointments.index')->with('success', 'Appointment status updated successfully');
+    }
 }
