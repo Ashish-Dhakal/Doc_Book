@@ -19,8 +19,7 @@ class AppointmentPolicy
         if (Auth::user()->roles == 'doctor') {
             $userId =  Auth::user()->id;
             $doctorId = Doctor::where('user_id', $userId)->first();
-            dd($doctorId->id);
-            return $patientId->id;
+            return $doctorId->id;
         } elseif (Auth::user()->roles == 'patient') {
             $userId =  Auth::user()->id;
             $patientId = Patient::where('user_id', $userId)->first();
@@ -38,9 +37,15 @@ class AppointmentPolicy
      */
     public function view(User $user, Appointment $appointment)
     {
+        if ($user->roles === 'admin') {
+            return true;
+        } elseif ($user->roles === 'doctor' && $appointment->patient_id === $this->userId()) {
+            return true;
+        } elseif ($user->roles === 'patient' && $appointment->patient_id === $this->userId()) {
+            return true;
+        }
 
-        return $user->roles === 'admin' ||
-            ($user->roles === 'patient' && $appointment->patient_id === $this->userId());
+        return false;
     }
 
     /**
@@ -64,6 +69,7 @@ class AppointmentPolicy
         }
 
         // Default: not authorized
+
         return false;
     }
 
