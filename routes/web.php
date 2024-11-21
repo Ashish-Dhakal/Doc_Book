@@ -5,6 +5,7 @@ use App\Http\Controllers\AppointmentSlotController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\RoleCheckMiddleware;
 use App\Models\AppointmentSlot;
 
 Route::get('/', function () {
@@ -25,7 +26,7 @@ Route::middleware('auth')->group(function () {
 
     // route for creatind user
     Route::resource('/users', UserController::class);
-    Route::resource('/appointment-slots', AppointmentSlotController::class);
+    Route::resource('/appointment-slots', AppointmentSlotController::class)->middleware('role:admin,doctor');
     Route::resource('/appointments', AppointmentController::class);
 });
 

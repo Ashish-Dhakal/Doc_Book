@@ -26,20 +26,17 @@ class AppointmentController extends Controller
 
         $userId = Auth::user()->id;
         $patient = Patient::where('user_id', $userId)->first();
-        $doctorId = Doctor::where('user_id' , $userId)->first();
+        $doctorId = Doctor::where('user_id', $userId)->first();
 
-        if($patient){
+        if ($patient) {
             $data['appointments'] = Appointment::where('patient_id', $patient->id)->get();
-        }
-        elseif(Auth::user()->roles == 'admin'){
+        } elseif (Auth::user()->roles == 'admin') {
             $data['appointments'] = Appointment::all();
-        }
-        elseif(Auth::user()->roles == 'doctor'){
+        } elseif (Auth::user()->roles == 'doctor') {
             $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
-              ->where('status', 'booked')
+                ->where('status', 'booked')
                 ->get();
-            }
-        else{
+        } else {
             return redirect()->route('login');
         }
 
@@ -56,6 +53,8 @@ class AppointmentController extends Controller
 
         if ($userRole == 'admin') {
             $data['patients'] = Patient::all();
+        } elseif ($userRole == 'doctor') {
+            $this->authorize('create', Appointment::class);
         }
 
         $data['doctors'] = Doctor::all();
@@ -95,7 +94,6 @@ class AppointmentController extends Controller
             return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
         }
 
-
         // check if the doctor is availabelin that time or not
         $doctorId = $request->input('doctor_id'); // get the doctor id
         $date = $request->input('date'); // get the date
@@ -114,11 +112,11 @@ class AppointmentController extends Controller
             ->where('date', $date)
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where(function ($subQuery) use ($startTime, $endTime) {
-                    $subQuery->where('status',['unavailable','booked'])
+                    $subQuery->where('status', ['unavailable', 'booked'])
                         ->where(function ($timeQuery) use ($startTime, $endTime) {
-                            
-                            $timeQuery->where('start_time', '<', $endTime) 
-                                ->where('end_time', '>', $startTime); 
+
+                            $timeQuery->where('start_time', '<', $endTime)
+                                ->where('end_time', '>', $startTime);
                         });
                 });
             })
@@ -162,9 +160,14 @@ class AppointmentController extends Controller
     public function show($id)
     {
         $appointment = Appointment::find($id);
+
         if (!$appointment) {
             abort(404);
         }
+
+        // Authorize the specific appointment instance
+        $this->authorize('view', $appointment);
+
         return view('appointments.show', compact('appointment'));
     }
 
@@ -173,22 +176,17 @@ class AppointmentController extends Controller
      */
     public function edit($id)
     {
-        $patient = Patient::where('user_id', Auth::user()->id)->first(); // Retrieve the patient data
+        $appointment = Appointment::find($id);
 
-        if ($patient || Auth::user()->roles == 'admin') {
-            $appointment = Appointment::find($id);
-
-            // Check if the appointment exists and if the user is either the patient or an admin
-            if ($appointment && ($appointment->patient_id == ($patient ? $patient->id : null) || Auth::user()->roles == 'admin')) {
-                $data['doctors'] = Doctor::all();
-                $data['appointment'] = $appointment;
-                return view('appointments.edit', $data);
-            } else {
-                abort(403, 'You are not authorized to edit this appointment');
-            }
-        } else {
-            abort(403, 'You are not authorized to edit this appointment');
+        if (!$appointment) {
+            abort(404, 'Appointment not found');
         }
+        $this->authorize('edit', $appointment);
+
+        $data['doctors'] = Doctor::all();
+        $data['appointment'] = $appointment;
+
+        return view('appointments.edit', $data);
     }
 
     /**
