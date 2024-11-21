@@ -7,6 +7,7 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Speciality;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UserRequest\UserCreateRequest;
 use App\Http\Requests\UserRequest\UserUpdateRequest;
 
@@ -133,6 +134,9 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
+        if(Auth::user()->id == $id){
+            return redirect()->back()->with('error', 'Admin cannot be deleted');
+        }
         $user = User::find($id);
         $user->delete();
 
