@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Speciality;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
@@ -27,6 +28,8 @@ class AppointmentController extends Controller
         $userId = Auth::user()->id;
         $patient = Patient::where('user_id', $userId)->first();
         $doctorId = Doctor::where('user_id', $userId)->first();
+        $data['specialities'] = Speciality::all();
+        // dd($specialities);
 
         if ($patient) {
             $data['appointments'] = Appointment::where('patient_id', $patient->id)->get();
@@ -46,8 +49,9 @@ class AppointmentController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        
 
         $userRole = Auth::user()->roles;
 
@@ -57,7 +61,7 @@ class AppointmentController extends Controller
             $this->authorize('create', Appointment::class);
         }
 
-        $data['doctors'] = Doctor::all();
+        $data['doctors'] = Doctor::where('speciality_id', $request->speciality_id)->get();
         return view('appointments.create', $data);
     }
 

@@ -11,12 +11,51 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white shadow-xl rounded-lg my-8 p-8">
 
-                    <!-- Button to create new appointment -->
-                    <div class="mb-6 flex justify-end">
-                        <a href="{{ route('appointments.create') }}"
-                            class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
-                            Create Appointment
-                        </a>
+                    <!-- Alpine.js scope for both the button and modal -->
+                    <div x-data="{ openModal: false }">
+                        <!-- Button to trigger the Create Appointment modal -->
+                        <div class="flex justify-end mb-4">
+                            <button @click="openModal = true"
+                                class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+                                Create Appointment
+                            </button>
+                        </div>
+
+                        <!-- Modal for creating appointment -->
+                        <div x-show="openModal" x-transition
+                            class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+                            <div class="bg-white p-8 rounded-lg w-fit mx-auto shadow-transparent">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xl font-semibold">Create Appointment</h3>
+                                    <button @click="openModal = false"
+                                        class="text-gray-600 hover:text-gray-900 text-2xl">&times;</button>
+                                </div>
+
+                                <!-- Appointment Form -->
+                                <form action="{{ route('appointments.create') }}" method="get">
+                                    @csrf
+                                    <div class="mb-4">
+                                        <label for="patient"
+                                            class="block text-sm font-medium text-gray-700">Patient</label>
+                                        <select name="speciality_id" id="patient" required
+                                            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="">Select Patient</option>
+                                            @foreach ($specialities as $speciality)
+                                                <option value="{{ $speciality->id }}">
+                                                    {{ $speciality->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="flex justify-end">
+                                        <button type="submit"
+                                            class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+                                            Create Appointment
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Appointments Table -->
@@ -42,8 +81,10 @@
                                         <td class="px-6 py-3">{{ $appointment->doctor->user->f_name }}
                                             {{ $appointment->doctor->user->l_name }}</td>
                                         <td class="px-6 py-3">{{ $appointment->date }}</td>
-                                        <td class="px-6 py-3">{{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}</td>
-                                        <td class="px-6 py-3">{{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}</td>
+                                        <td class="px-6 py-3">
+                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}</td>
+                                        <td class="px-6 py-3">
+                                            {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}</td>
                                         <td class="px-6 py-3 capitalize">{{ $appointment->status }}</td>
                                         <td class="px-6 py-3">
                                             <a href="{{ route('appointments.show', $appointment->id) }}"
@@ -59,11 +100,21 @@
                                                 <div class="flex items-center space-x-2">
                                                     <select name="status"
                                                         class="px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
-                                                        <option value="pending" {{ $appointment->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                        <option value="booked" {{ $appointment->status == 'booked' ? 'selected' : '' }}>Booked</option>
-                                                        <option value="rescheduled" {{ $appointment->status == 'rescheduled' ? 'selected' : '' }}>Rescheduled</option>
-                                                        <option value="cancelled" {{ $appointment->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                                                        <option value="completed" {{ $appointment->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                                                        <option value="pending"
+                                                            {{ $appointment->status == 'pending' ? 'selected' : '' }}>
+                                                            Pending</option>
+                                                        <option value="booked"
+                                                            {{ $appointment->status == 'booked' ? 'selected' : '' }}>Booked
+                                                        </option>
+                                                        <option value="rescheduled"
+                                                            {{ $appointment->status == 'rescheduled' ? 'selected' : '' }}>
+                                                            Rescheduled</option>
+                                                        <option value="cancelled"
+                                                            {{ $appointment->status == 'cancelled' ? 'selected' : '' }}>
+                                                            Cancelled</option>
+                                                        <option value="completed"
+                                                            {{ $appointment->status == 'completed' ? 'selected' : '' }}>
+                                                            Completed</option>
                                                     </select>
                                                     <button type="submit"
                                                         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200">
@@ -106,10 +157,12 @@
                                 <span class="font-bold">Date:</span> {{ $appointment->date }}
                             </div>
                             <div class="mb-2">
-                                <span class="font-bold">Start Time:</span> {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
+                                <span class="font-bold">Start Time:</span>
+                                {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
                             </div>
                             <div class="mb-2">
-                                <span class="font-bold">End Time:</span> {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}
+                                <span class="font-bold">End Time:</span>
+                                {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}
                             </div>
                             <div class="mb-4">
                                 <span class="font-bold">Status:</span> {{ $appointment->status }}
