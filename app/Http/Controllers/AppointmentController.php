@@ -64,7 +64,7 @@ class AppointmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, AppointmentSlot $appointmentSlot)
     {
         // dd($request->toArray());
 
@@ -148,6 +148,16 @@ class AppointmentController extends Controller
             $appointment->end_time = $request->input('end_time');
             $appointment->status = 'booked';
             $appointment->save();
+
+            // dd($request->input('doctor_id'));
+            $appointmentSlot = new AppointmentSlot();
+            $appointmentSlot->doctor_id = $request->input('doctor_id');
+            $appointmentSlot->date = $request->input('date');
+            $appointmentSlot->start_time = $request->input('start_time');
+            $appointmentSlot->end_time = $request->input('end_time');
+            $appointmentSlot->status = 'booked';
+            $appointmentSlot->save();
+
             return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
         } else {
             abort(403);
@@ -217,10 +227,10 @@ class AppointmentController extends Controller
 
 
 
-    public function updateStatus(Request $request, Appointment $appointment , AppointmentSlot $appointmentSlot)
+    public function updateStatus(Request $request, Appointment $appointment, AppointmentSlot $appointmentSlot)
     {
         $request->validate([
-            'status' => 'required|in:pending,booked,rescheduled,cancelled,completed',  
+            'status' => 'required|in:pending,booked,rescheduled,cancelled,completed',
         ]);
         $status = $request->status;
 
@@ -235,7 +245,18 @@ class AppointmentController extends Controller
                 $appointmentSlot->doctor_id = $appointment->doctor_id;
                 $appointmentSlot->end_time = $appointment->end_time;
                 $appointmentSlot->date = $appointment->date;
-                $appointmentSlot->save();
+
+                $doctorInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+                    ->where('date', $appointment->date)
+                    ->where('start_time', $appointment->start_time)
+                    ->where('end_time', $appointment->end_time)
+                    ->where('status', 'booked')
+                    ->first();
+                if ($doctorInfo) {
+                    return redirect()->route('appointments.index')->with('error', 'This time slot is already booked');
+                } else {
+                    $appointmentSlot->save();
+                }
                 break;
             case 'rescheduled':
                 $appointment->status = 'rescheduled';
@@ -248,7 +269,7 @@ class AppointmentController extends Controller
                 break;
             default:
                 $appointment->status = 'pending';
-        }   
+        }
         $appointment->save();
         return redirect()->route('appointments.index')->with('success', 'Appointment status updated successfully');
     }
