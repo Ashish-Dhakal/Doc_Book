@@ -43,8 +43,9 @@ class SpecialityController extends Controller
      */
     public function show($id)
     {
-        $specialization = Speciality::find($id);
-        return view('specializations.show', compact('specialization'));
+        $data['specialization'] = Speciality::find($id);
+        $data['doctors'] = Doctor::where('speciality_id', $id)->get();
+        return view('specializations.show', $data);
     }
 
     /**

@@ -66,9 +66,9 @@
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-800">
                                                 <!-- Actions: Edit, Delete -->
-                                                <a href="{{ route('users.edit', $patient->id) }}"
+                                                <a href="{{ route('users.edit', $patient->user->id) }}"
                                                     class="text-indigo-600 hover:text-indigo-900">Edit</a> |
-                                                <form action="{{ route('users.destroy', $patient->id) }}" method="POST"
+                                                <form action="{{ route('users.destroy', $patient->user->id) }}" method="POST"
                                                     class="inline-block">
                                                     @csrf
                                                     @method('DELETE')
@@ -115,9 +115,9 @@
                                             <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->phone }}</td>
                                             <td class="px-6 py-4 text-sm text-gray-800">
                                                 <!-- Actions: Edit, Delete -->
-                                                <a href="{{ route('users.edit', $doctor->id) }}"
+                                                <a href="{{ route('users.edit', $doctor->user->id) }}"
                                                     class="text-indigo-600 hover:text-indigo-900">Edit</a> |
-                                                <form action="{{ route('users.destroy', $doctor->id) }}" method="POST"
+                                                <form action="{{ route('users.destroy', $doctor->user->id) }}" method="POST"
                                                     class="inline-block">
                                                     @csrf
                                                     @method('DELETE')
