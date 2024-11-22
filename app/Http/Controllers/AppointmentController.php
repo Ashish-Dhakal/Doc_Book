@@ -246,9 +246,12 @@ class AppointmentController extends Controller
         ]);
         $status = $request->status;
 
+        if ($appointment->status === 'completed' && $request->status !== 'completed') {
+            return redirect()->route('appointments.index')->with('error', 'This appointment is already completed and cannot be modified.');
+        }
+
         switch ($status) {
             case 'pending':
-                // dd('pending');
                 $appointment->status = 'pending';
 
                 $appointmentInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
@@ -300,6 +303,23 @@ class AppointmentController extends Controller
                 $appointment->delete();
 
                 return redirect()->route('appointments.index')->with('success', 'Appointment cancelled successfully');
+                break;
+
+            case 'completed':
+                if ($appointment->status !== 'completed') {
+                    // Mark the appointment as completed
+                    $appointment->status = 'completed';
+
+                    // Delete the corresponding appointment slot
+                    AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+                        ->where('date', $appointment->date)
+                        ->where('start_time', $appointment->start_time)
+                        ->where('end_time', $appointment->end_time)
+                        ->delete();
+                }
+                // After completing, redirect with a flag to show the review modal
+                $appointment->save();
+                return redirect()->route('appointments.index')->with('success', 'Appointment marked as completed')->with('showReviewModal', true);
                 break;
             default:
                 $appointment->status = 'pending';

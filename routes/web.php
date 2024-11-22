@@ -1,13 +1,14 @@
 <?php
 
-use App\Http\Controllers\AppointmentController;
-use App\Http\Controllers\AppointmentSlotController;
+use App\Models\AppointmentSlot;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SpecialityController;
 use App\Http\Middleware\RoleCheckMiddleware;
-use App\Models\AppointmentSlot;
+use App\Http\Controllers\SpecialityController;
+use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AppointmentSlotController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
 
 
     Route::post('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
+
+    Route::resource('/reviews', ReviewController::class);
 
 
 });

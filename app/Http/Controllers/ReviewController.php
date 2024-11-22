@@ -28,7 +28,31 @@ class ReviewController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validate the request
+        $request->validate([
+            'appointment_id' => 'required|exists:appointments,id',
+            'comment' => 'required|string|max:1000',
+        ]);
+
+        // Check if a review already exists for this appointment
+        $review = Review::where('appointment_id', $request->appointment_id)->first();
+
+        if ($review) {
+            // Update the existing review
+            $review->comment = $request->comment;
+            $review->save();
+            $message = 'Review updated successfully!';
+        } else {
+            // Create a new review
+            $review = new Review();
+            $review->appointment_id = $request->appointment_id;
+            $review->comment = $request->comment;
+            $review->save();
+            $message = 'Review submitted successfully!';
+        }
+
+        // Redirect back to the appointment page with success message
+        return redirect()->route('appointments.show', $request->appointment_id)->with('success', $message);
     }
 
     /**
