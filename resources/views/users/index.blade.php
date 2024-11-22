@@ -7,50 +7,106 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="container mx-auto py-8">
-                    <h1 class="text-3xl font-bold mb-6">Users</h1>
-                    <a href="{{ route('users.create') }}" class="px-4 py-2 bg-blue-500 text-white rounded mb-4 inline-block">Create New User</a>
-                    
-                    @if (session('success'))
-                        <div class="bg-green-200 text-green-800 p-4 rounded mb-4">
-                            {{ session('success') }}
+            <div class="max-w-6xl mx-auto my-8">
+                <div class="bg-white p-8 shadow-lg rounded-lg" x-data="{ selectedTab: 'list-patients' }">
+                    <!-- Tab Navigation -->
+                    <div class="border-b border-gray-200 mb-4">
+                        <ul class="flex space-x-4">
+                            <li>
+                                <button type="button"
+                                    class="text-sm font-medium text-black px-4 py-2 hover:text-indigo-600 focus:outline-none"
+                                    :class="{ 'border-b-2 border-indigo-600': selectedTab === 'list-patients' }"
+                                    @click="selectedTab = 'list-patients'">Patients</button>
+                            </li>
+                            <li>
+                                <button type="button"
+                                    class="text-sm font-medium text-black px-4 py-2 hover:text-indigo-600 focus:outline-none"
+                                    :class="{ 'border-b-2 border-indigo-600': selectedTab === 'list-doctors' }"
+                                    @click="selectedTab = 'list-doctors'">Doctors</button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <!-- Patient List -->
+                    <div x-show="selectedTab === 'list-patients'">
+                        <h2 class="text-2xl font-semibold mb-4">Patients List</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">First Name</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Last Name</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Email</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Phone</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Address</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($patients as $patient)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $patient->user->f_name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $patient->user->l_name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $patient->user->email }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $patient->user->phone }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $patient->user->address }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">
+                                            <!-- Actions: Edit, Delete -->
+                                            <a href="{{ route('users.edit', $patient->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a> |
+                                            <form action="{{ route('users.destroy', $patient->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                    @endif
-                
-                    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                        <thead>
-                            <tr class="bg-gray-100 text-left">
-                                <th class="px-6 py-4">First Name</th>
-                                <th class="px-6 py-4">Last Name</th>
-                                <th class="px-6 py-4">Email</th>
-                                <th class="px-6 py-4">Role</th>
-                                <th class="px-6 py-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($users as $user)
-                                <tr class="border-t">
-                                    <td class="px-6 py-4">{{ $user->f_name }}</td>
-                                    <td class="px-6 py-4">{{ $user->l_name }}</td>
-                                    <td class="px-6 py-4">{{ $user->email }}</td>
-                                    <td class="px-6 py-4">{{ $user->roles }} 
-                                        @if ($user->roles == 'doctor')
-                                            ( {{ $user->doctor->speciality_id }} )
-                                        @endif
-                                    <td class="px-6 py-4">
-                                        <a href="{{ route('users.show', $user) }}" class="text-blue-500">View</a> | 
-                                        <a href="{{ route('users.edit', $user) }}" class="text-yellow-500">Edit</a> | 
-                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-500">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    </div>
+
+                    <!-- Doctor List -->
+                    <div x-show="selectedTab === 'list-doctors'">
+                        <h2 class="text-2xl font-semibold mb-4">Doctors List</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">First Name</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Last Name</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Email</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Specialization</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Address</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Phone</th>
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($doctors as $doctor)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->f_name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->l_name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->email }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->speciality->name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->address }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->phone }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-800">
+                                            <!-- Actions: Edit, Delete -->
+                                            <a href="{{ route('users.edit', $doctor->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a> |
+                                            <form action="{{ route('users.destroy', $doctor->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

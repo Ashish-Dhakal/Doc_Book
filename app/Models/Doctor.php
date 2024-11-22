@@ -30,6 +30,6 @@ class Doctor extends Model
 
     public function speciality()
     {
-        return $this->belogsTo(Speciality::class);
+        return $this->belongsTo(Speciality::class);
     }
 }

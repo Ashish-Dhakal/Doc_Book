@@ -18,7 +18,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $data['users'] = User::all();
+        $data['patients'] = Patient::all();
+        $data['doctors'] = Doctor::all();
         return view('users.index', $data);
     }
 
