@@ -51,7 +51,7 @@ class AppointmentController extends Controller
      */
     public function create(Request $request)
     {
-        
+
 
         $userRole = Auth::user()->roles;
 
@@ -61,7 +61,15 @@ class AppointmentController extends Controller
             $this->authorize('create', Appointment::class);
         }
 
-        $data['doctors'] = Doctor::where('speciality_id', $request->speciality_id)->get();
+        $doctors = Doctor::where('speciality_id', $request->speciality_id)->get();
+
+        if ($doctors->isEmpty()) {
+            return redirect()->back()->with('error', 'No doctors available for this speciality');
+        }
+
+        $data['doctors'] = $doctors;
+        // $data['doctors'] = Doctor::where('speciality_id', $request->speciality_id)->get();
+
         return view('appointments.create', $data);
     }
 
@@ -240,7 +248,18 @@ class AppointmentController extends Controller
 
         switch ($status) {
             case 'pending':
+                // dd('pending');
                 $appointment->status = 'pending';
+
+                $appointmentInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+                    ->where('date', $appointment->date)
+                    ->where('start_time', $appointment->start_time)
+                    ->where('end_time', $appointment->end_time)
+                    ->where('status', 'booked')
+                    ->first();
+                if ($appointmentInfo) {
+                    return redirect()->route('appointments.index')->with('error', 'This time slot is already booked');
+                }
                 break;
             case 'booked':
                 $appointment->status = 'booked';
@@ -267,9 +286,20 @@ class AppointmentController extends Controller
                 break;
             case 'cancelled':
                 $appointment->status = 'cancelled';
-                break;
-            case 'completed':
-                $appointment->status = 'completed';
+
+                $appointmentSlot = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+                    ->where('date', $appointment->date)
+                    ->where('start_time', $appointment->start_time)
+                    ->where('end_time', $appointment->end_time)
+                    ->first();
+
+                if ($appointmentSlot) {
+                    $appointmentSlot->delete();
+                }
+
+                $appointment->delete();
+
+                return redirect()->route('appointments.index')->with('success', 'Appointment cancelled successfully');
                 break;
             default:
                 $appointment->status = 'pending';

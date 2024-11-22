@@ -64,7 +64,7 @@ class AppointmentPolicy
         }
 
         // Patients can edit only their own appointments
-        if ($user->roles === 'patient' && $appointment->patient_id === $user->id) {
+        if ($user->roles === 'patient' && $appointment->patient_id === $this->userId()) {
             return true;
         }
 
