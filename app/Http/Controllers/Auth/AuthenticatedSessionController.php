@@ -26,10 +26,27 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Check if the user's email is verified
+        $user = auth()->user();
+
+        if (is_null($user->email_verified_at)) {
+            auth()->logout();
+
+            // Optionally, invalidate the session to prevent session fixation
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Your email address is not verified. Please check your inbox to verify your account.']);
+        }
+
+        // Regenerate the session
         $request->session()->regenerate();
 
+        // Redirect to the intended page (or dashboard)
         return redirect()->intended(route('dashboard', absolute: false));
     }
+
 
     /**
      * Destroy an authenticated session.

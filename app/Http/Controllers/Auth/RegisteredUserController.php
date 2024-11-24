@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Patient;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
+use App\Notifications\VerifyEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -35,7 +37,7 @@ class RegisteredUserController extends Controller
 
             'f_name' => ['required', 'string', 'max:255'],
             'l_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
         // $role = 'patient';
@@ -46,15 +48,31 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        $user->notify(new VerifyEmail($user));
 
-      Patient::create([
-        'user_id' => $user->id,
-      ]);
+        Patient::create([
+            'user_id' => $user->id,
+        ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: true));
+    }
+
+    public function emailVerify($id)
+    {
+        $date = Carbon::now();
+        $user = User::findOrFail($id);
+
+        if ($user->email_verified_at == null) {
+            $user->update([
+                'email_verified_at' => $date,
+            ]);
+            return redirect()->route('login')->with('success', 'Your email is verified and activated successfully.');
+        } else {
+            return redirect()->route('login')->with('error', 'Your email is already active.');
+        }
     }
 }
