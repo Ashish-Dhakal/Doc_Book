@@ -36,10 +36,10 @@
                                     @csrf
                                     <div class="mb-4">
                                         <label for="patient"
-                                            class="block text-sm font-medium text-gray-700">Patient</label>
+                                            class="block text-sm font-medium text-gray-700">Speciality</label>
                                         <select name="speciality_id" id="patient" required
                                             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                            <option value="">Select Patient</option>
+                                            <option value="">Select Doctor Speciality</option>
                                             @foreach ($specialities as $speciality)
                                                 <option value="{{ $speciality->id }}">
                                                     {{ $speciality->name }}</option>
@@ -146,7 +146,8 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach ($appointments as $appointment)
+
+                    @forelse  ($appointments as $appointment)
                         <div class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition duration-300">
                             <div class="text-xl font-semibold mb-4">Appointment #{{ $appointment->id }}</div>
                             <div class="mb-2">
@@ -176,7 +177,11 @@
                                 View Appointment
                             </a>
                         </div>
-                    @endforeach
+                    @empty
+                        <div class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition duration-300">
+                            <div class="text-xl font-semibold mb-4">Currently You Don't Have Any Appointments</div>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>

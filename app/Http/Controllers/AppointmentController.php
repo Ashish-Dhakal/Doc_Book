@@ -200,6 +200,10 @@ class AppointmentController extends Controller
     public function edit($id)
     {
         $appointment = Appointment::find($id);
+      if($appointment->status == 'completed'){
+        return redirect()->route('appointments.index')->with('error', 'This appointment is already completed and cannot be modified.');
+          
+      }
 
         if (!$appointment) {
             abort(404, 'Appointment not found');
