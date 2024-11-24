@@ -48,6 +48,5 @@ Route::middleware('auth')->group(function () {
 
 });
 Route::get('emailVerify/{id}', [RegisteredUserController::class, 'emailVerify'])->name('emailVerify');
-Route::post('/login', [LoginController::class, 'login'])->name('login');
 
 require __DIR__.'/auth.php';

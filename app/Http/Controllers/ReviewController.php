@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
 {
@@ -28,32 +29,46 @@ class ReviewController extends Controller
      */
     public function store(Request $request)
     {
+        // Log request data for debugging
+        \Log::debug($request->toArray());
+
         // Validate the request
-        $request->validate([
+        $validated = $request->validate([
             'appointment_id' => 'required|exists:appointments,id',
             'comment' => 'required|string|max:1000',
+            'pdf' => 'nullable|mimes:pdf|max:10240',
         ]);
 
-        // Check if a review already exists for this appointment
-        $review = Review::where('appointment_id', $request->appointment_id)->first();
+        // Handle PDF upload if it exists
+        $pdfPath = null;
+        if ($request->hasFile('pdf')) {
+            if ($request->file('pdf')->isValid()) {
+                $pdfPath = $request->file('pdf')->store('reviews/pdfs', 'public');
+            } else {
+                \Log::error('PDF upload failed: Invalid file or error during upload');
+            }
+        }
 
-        if ($review) {
-            // Update the existing review
-            $review->comment = $request->comment;
-            $review->save();
-            $message = 'Review updated successfully!';
-        } else {
-            // Create a new review
+        // Create a new review and associate it with the appointment
+        try {
             $review = new Review();
             $review->appointment_id = $request->appointment_id;
             $review->comment = $request->comment;
+            if ($pdfPath) {
+                $review->pdf = $pdfPath;
+            }
             $review->save();
-            $message = 'Review submitted successfully!';
-        }
 
-        // Redirect back to the appointment page with success message
-        return redirect()->route('appointments.show', $request->appointment_id)->with('success', $message);
+            return redirect()->route('appointments.show', $request->appointment_id)->with('success', 'Review submitted successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to save review: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to save review. Please try again.');
+        }
     }
+
+
+
+
 
     /**
      * Display the specified resource.

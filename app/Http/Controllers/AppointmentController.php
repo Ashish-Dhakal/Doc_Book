@@ -184,7 +184,9 @@ class AppointmentController extends Controller
      */
     public function show($id)
     {
-        $appointment = Appointment::find($id);
+        $appointment = Appointment::with('reviews')->find($id);
+        // $appointment = Appointment::with('reviews')->find($id);
+
 
         if (!$appointment) {
             abort(404);

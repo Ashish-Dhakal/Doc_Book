@@ -29,9 +29,9 @@ class Appointment extends Model
         return $this->hasOne(Payment::class);
     }
 
-    public function review()
+    public function reviews()
     {
-        return $this->hasOne(Review::class);
+        return $this->hasMany(Review::class);
     }
 
 }

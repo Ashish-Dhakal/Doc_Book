@@ -40,6 +40,39 @@
                         <th class="text-left font-medium text-gray-700">Status</th>
                         <td class="text-gray-800 capitalize">{{ $appointment->status }}</td>
                     </tr>
+                    <tr>
+                        <th class="text-left font-medium text-gray-700">Review PDF</th>
+                        <td class="text-gray-800">
+                            @if ($appointment->reviews && $appointment->reviews->isEmpty())
+                                No reviews yet.
+                            @elseif ($appointment->reviews)
+                                @foreach ($appointment->reviews as $review)
+                                    <div class="mb-2">
+                                        <p><strong>Comment:</strong> {{ $review->comment }}</p>
+                                        <p><strong>Submitted on:</strong> {{ $review->created_at->format('M d, Y') }}
+                                        </p>
+
+                                        @if ($review->pdf)
+                                            <a href="{{ Storage::url($review->pdf) }}" target="_blank"
+                                                class="text-blue-600 hover:underline">
+                                                View Review PDF
+                                            </a>
+                                        @else
+                                            <p>No PDF uploaded.</p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            @else
+                                No reviews found.
+                            @endif
+                        </td>
+
+
+
+
+
+                    </tr>
+
                 </table>
 
                 <!-- Action Buttons -->
@@ -63,16 +96,15 @@
 
 
 
-                        <form action="{{ route('appointments.updateStatus', $appointment->id) }}"
-                            method="POST" class="inline-block ml-2">
+                        <form action="{{ route('appointments.updateStatus', $appointment->id) }}" method="POST"
+                            class="inline-block ml-2">
                             @csrf
                             @method('POST')
                             <div class="flex items-center space-x-2">
-                              
+
                                 <select name="status"
                                     class=" full-width px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
-                                    <option value="completed"
-                                        {{ $appointment->status == 'completed' ? 'selected' : '' }}>
+                                    <option value="completed" {{ $appointment->status == 'completed' ? 'selected' : '' }}>
                                         Completed</option>
                                 </select>
                                 <button type="submit"
@@ -100,21 +132,23 @@
                 @csrf
                 <input type="hidden" name="appointment_id" value="{{ $appointment->id }}">
 
-                <!-- If a review exists, display it. Otherwise, show an empty textarea -->
-                @if ($appointment->review)
-                    <textarea name="comment" rows="4" class="w-full p-2 border rounded-md" placeholder="Write your review here...">{{ $appointment->review->comment }}</textarea>
-                @else
-                    <textarea name="comment" rows="4" class="w-full p-2 border rounded-md" placeholder="Write your review here..."></textarea>
-                @endif
+                <!-- Review Textarea -->
+                <textarea name="comment" rows="4" class="w-full p-2 border rounded-md" placeholder="Write your review here...">{{ old('comment') }}</textarea>
+
+                <!-- PDF Upload Field -->
+                <div class="mt-4">
+                    <label for="pdf" class="block text-sm font-medium text-gray-700">Upload PDF (optional)</label>
+                    <input type="file" name="pdf" id="pdf" accept="application/pdf"
+                        class="mt-1 block w-full border rounded-md">
+                </div>
 
                 <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    @if ($appointment->review)
-                        Update Review
-                    @else
-                        Submit Review
-                    @endif
+                    Submit Review
                 </button>
             </form>
+
+
+
 
             <!-- Close button for the modal -->
             <button id="closeModal"
