@@ -10,6 +10,8 @@ use App\Models\Speciality;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
+use App\Models\PatientHistory;
+use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -322,6 +324,10 @@ class AppointmentController extends Controller
                         ->where('end_time', $appointment->end_time)
                         ->delete();
                 }
+                if (!$appointment->review) {
+                    return back()->with('error', 'Please add review first');
+                }
+
                 // Example start time and end time
                 $startTime = Carbon::parse($appointment->start_time);  // Doctor's shift start time
                 $endTime = Carbon::parse($appointment->end_time);    // Doctor's shift end time
@@ -332,10 +338,18 @@ class AppointmentController extends Controller
                 // Calculate the total fee
                 $totalFee = $durationInHours * $appointment->doctor->hourly_rate;
 
-                Payment::create([
+                $payment =Payment::create([
                     'appointment_id' => $appointment->id,
                     'amount' => $totalFee,
                     'patient_id' => $appointment->patient_id,
+                ]);
+               
+                PatientHistory::create([
+                    'appointment_id' => $appointment->id,
+                    'patient_id' => $appointment->patient_id,
+                    'doctor_id' => $appointment->doctor_id,
+                    'review_id' => $appointment->review->id,
+                    'payment_id' => $payment->id,
                 ]);
 
                 // After completing, redirect with a flag to show the review modal
