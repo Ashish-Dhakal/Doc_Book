@@ -57,6 +57,7 @@ class UserController extends Controller
             Doctor::create([
                 'user_id' => $user->id,
                 'speciality_id' => $request->speciality_id,
+                'hourly_rate' => $request->hourly_rate,
             ]);
         }
 
@@ -120,6 +121,7 @@ class UserController extends Controller
                 $doctor->update([
                     'user_id' => $user->id,
                     'speciality_id' => $request->speciality_id,
+                    'hourly_rate' => $request->hourly_rate,
                 ]);
             } else {
                 return redirect()->back()->with('error', 'Doctor not found');

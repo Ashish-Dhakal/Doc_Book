@@ -95,6 +95,7 @@
                                         <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Last Name</th>
                                         <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Email</th>
                                         <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Specialization
+                                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Houtly Rate
                                         </th>
                                         <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Address</th>
                                         <th class="px-6 py-3 text-left text-sm font-medium text-gray-600">Phone</th>
@@ -109,6 +110,8 @@
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->email }}</td>
                                             <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->speciality->name }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->hourly_rate }}
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->address }}
                                             </td>

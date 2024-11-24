@@ -187,6 +187,17 @@
                                     @enderror
                                 </div>
 
+                                <!--Hourly Rate -->
+                                <div>
+                                    <label for="hourly_rate" class="block text-sm font-medium text-gray-700">Hourly Rate</label>
+                                    <input type="text" id="hourly_rate" name="hourly_rate" value="{{ old('hourly_rate') }}"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        required>
+                                    @error('hourly_rate')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
                                 <!-- Specialization -->
                                 <div>
                                     <label for="specility"

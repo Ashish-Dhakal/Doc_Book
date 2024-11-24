@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('department')->nullable();
             $table->integer('experience')->default(0);
             $table->string('qualification')->nullable();
+            $table->float('hourly_rate')->default(0);
             $table->timestamps();
             
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

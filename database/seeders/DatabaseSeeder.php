@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
             'qualification' => 'MBBS',
             'speciality_id' => $speciality->id, 
             'department' => 'Cardiology',
+            'hourly_rate' => 1000,
         ]);
 
 

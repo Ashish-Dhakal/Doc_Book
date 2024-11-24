@@ -12,9 +12,14 @@ class Payment extends Model
       {
           return $this->belongsTo(User::class);
       }
-  
       public function appointment()
       {
           return $this->belongsTo(Appointment::class);
+      }
+
+      //relation with pattient
+      public function patient()
+      {
+          return $this->belongsTo(Patient::class);
       }
 }

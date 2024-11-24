@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('patient_id')->unique();
+            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
             $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
             $table->integer('amount');
-            $table->string('payment_method');
-            $table->enum('payment_type', ['online', 'cash'])->default('cash');
+            $table->enum('payment_type', ['online', 'cash' ,'-'])->default('-');
             $table->enum('payment_status', ['pending', 'completed'])->default('pending');
             $table->timestamps();
         });
