@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Payment;
 use App\Models\Speciality;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
@@ -317,6 +318,22 @@ class AppointmentController extends Controller
                         ->where('end_time', $appointment->end_time)
                         ->delete();
                 }
+                // Example start time and end time
+                $startTime = Carbon::parse($appointment->start_time);  // Doctor's shift start time
+                $endTime = Carbon::parse($appointment->end_time);    // Doctor's shift end time
+
+                // Calculate the duration in hours
+                $durationInHours = $startTime->diffInHours($endTime);
+
+                // Calculate the total fee
+                $totalFee = $durationInHours * $appointment->doctor->hourly_rate;
+
+                Payment::create([
+                    'appointment_id' => $appointment->id,
+                    'amount' => $totalFee,
+                    'patient_id' => $appointment->patient_id,
+                ]);
+
                 // After completing, redirect with a flag to show the review modal
                 $appointment->save();
                 return redirect()->route('appointments.index')->with('success', 'Appointment marked as completed')->with('showReviewModal', true);
