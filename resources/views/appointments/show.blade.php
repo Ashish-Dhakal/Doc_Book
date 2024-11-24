@@ -53,12 +53,17 @@
                         Back to Appointments
                     </a>
 
+                    @can('doctor_access')
+                        
+                    
+
                     @if ($appointment->status == 'booked')
                         <button id="leaveReviewButton"
                             class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             Leave a Review
                         </button>
                     @endif
+                    @endcan
                 </div>
 
             </div>
