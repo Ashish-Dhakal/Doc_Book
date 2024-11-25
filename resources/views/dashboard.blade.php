@@ -397,64 +397,82 @@
                         <div class="mb-4">
                             <div class="card border-0 shadow-sm">
                                 <div class="card-header bg-white border-bottom border-2 p-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-people-fill fs-4 text-primary me-2"></i>
-                                        <h5 class="m-0 fw-bold text-primary">Available Doctors</h5>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-people-fill fs-4 text-primary me-2"></i>
+                                            <h5 class="m-0 fw-bold text-primary">Available Doctors</h5>
+                                        </div>
+                                        <div class="input-group w-auto">
+                                            <input type="text" id="doctorSearch" class="form-control border-primary"
+                                                placeholder="Search doctors..." style="border-right: none;">
+                                            <button class="btn btn-primary">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <ul class="list-group list-group-flush">
-                                    @foreach ($doctors as $doctor)
-                                        <li class="list-group-item p-3 hover-bg-light">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-4">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-                                                            <i class="bi bi-person-circle fs-4 text-primary"></i>
-                                                        </div>
-                                                        <div>
-                                                            <h6 class="mb-1 fw-bold">Dr. {{ $doctor->user->f_name }}
-                                                                {{ $doctor->user->l_name }}</h6>
-                                                            <span class="badge bg-primary bg-opacity-10 text-primary">
-                                                                {{ $doctor->speciality->name }}
-                                                            </span>
+                                <div class="card-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach ($doctors as $doctor)
+                                            <li class="list-group-item p-3 hover-bg-light bg-light border-bottom">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-4">
+                                                        <div class="d-flex align-items-center">
+                                                            <div
+                                                                class="rounded-circle bg-primary bg-opacity-10 p-3 me-3 shadow-sm">
+                                                                <i class="bi bi-person-circle fs-4 text-primary"></i>
+                                                            </div>
+                                                            <div>
+                                                                <h6 class="mb-1 fw-bold text-dark">Dr.
+                                                                    {{ $doctor->user->f_name }}
+                                                                    {{ $doctor->user->l_name }}</h6>
+                                                                <span class="badge bg-primary bg-opacity-25 text-primary">
+                                                                    {{ $doctor->speciality->name }}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <div class="row g-2">
-                                                        @foreach ($doctor->appointmentSlots as $slot)
-                                                            <div class="col-md-6">
-                                                                <div class="card border border-light bg-light">
-                                                                    <div class="card-body p-2">
-                                                                        <div class="d-flex align-items-center mb-2">
-                                                                            <i
-                                                                                class="bi bi-calendar2-date text-primary me-2"></i>
-                                                                            <small
-                                                                                class="fw-semibold">{{ $slot->date }}</small>
-                                                                        </div>
-                                                                        <div class="d-flex align-items-center mb-2">
-                                                                            <i class="bi bi-clock text-primary me-2"></i>
-                                                                            <small>{{ $slot->start_time }} -
-                                                                                {{ $slot->end_time }}</small>
-                                                                        </div>
-                                                                        <div class="d-flex align-items-center">
-                                                                            <i class="bi bi-circle-fill text-{{ $slot->status === 'available' ? 'success' : 'danger' }} me-2"
-                                                                                style="font-size: 8px;"></i>
-                                                                            <small
-                                                                                class="text-capitalize">{{ $slot->status }}</small>
+                                                    <div class="col-md-8">
+                                                        <div class="row g-2">
+                                                            @foreach ($doctor->appointmentSlots as $slot)
+                                                                <div class="col-md-6">
+                                                                    <div class="card border-0 shadow-sm">
+                                                                        <div class="card-body p-2">
+                                                                            <div class="d-flex align-items-center mb-2">
+                                                                                <i
+                                                                                    class="bi bi-calendar2-date text-primary me-2"></i>
+                                                                                <small
+                                                                                    class="fw-semibold text-muted">{{ $slot->date }}</small>
+                                                                            </div>
+                                                                            <div class="d-flex align-items-center mb-2">
+                                                                                <i
+                                                                                    class="bi bi-clock text-primary me-2"></i>
+                                                                                <small
+                                                                                    class="text-dark">{{ $slot->start_time }}
+                                                                                    -
+                                                                                    {{ $slot->end_time }}</small>
+                                                                            </div>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="bi bi-circle-fill text-{{ $slot->status === 'available' ? 'success' : 'danger' }} me-2"
+                                                                                    style="font-size: 8px;"></i>
+                                                                                <small
+                                                                                    class="text-capitalize text-{{ $slot->status === 'available' ? 'success' : 'danger' }}">
+                                                                                    {{ $slot->status }}</small>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        @endforeach
+                                                            @endforeach
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
                             </div>
                         </div>
+
 
                         <!-- Appointments Grid -->
                         <div class="row g-4">
@@ -615,6 +633,89 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            document.getElementById('doctorSearch').addEventListener('input', function() {
+                let query = this.value;
+
+                fetch(`/doctors/search?query=${query}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        let listGroup = document.querySelector('.list-group');
+                        listGroup.innerHTML = ''; // Clear the current list
+
+                        if (data.doctors.length > 0) {
+                            data.doctors.forEach(doctor => {
+                                let slots = doctor.appointment_slots.map(slot => `
+                    <div class="col-md-6">
+                        <div class="card border border-light bg-light">
+                            <div class="card-body p-2">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-calendar2-date text-primary me-2"></i>
+                                    <small class="fw-semibold">${slot.date}</small>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-clock text-primary me-2"></i>
+                                    <small>${slot.start_time} - ${slot.end_time}</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-circle-fill text-${slot.status === 'available' ? 'success' : 'danger'} me-2" style="font-size: 8px;"></i>
+                                    <small class="text-capitalize">${slot.status}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                                listGroup.innerHTML += `
+                    <li class="list-group-item p-3 hover-bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                        <i class="bi bi-person-circle fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">Dr. ${doctor.user.f_name} ${doctor.user.l_name}</h6>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                                            ${doctor.speciality.name}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row g-2">
+                                    ${slots}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                `;
+                            });
+                        } else {
+                            listGroup.innerHTML = `
+                <li class="list-group-item text-center">
+                    No doctors found.
+                </li>
+            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Something went wrong. Please try again.');
+                    });
+            });
+        </script>
 
 
     @endcan
