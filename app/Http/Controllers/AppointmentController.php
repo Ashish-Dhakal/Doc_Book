@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AppointmentCompleteMail;
 use Carbon\Carbon;
 use App\Models\Doctor;
 use App\Models\Review;
@@ -200,20 +201,20 @@ class AppointmentController extends Controller
             $appointment->status = 'booked';
             $appointment->save();
 
-              // Send email to both the patient and the doctor
-              $patient = Patient::find($appointment->patient_id);
-              $doctor = Doctor::find($appointment->doctor_id);
-              $patientEmail = $patient->user->email;
-              $doctorEmail = $doctor->user->email;
-  
-              // Send email to patient
-              Mail::to($patientEmail)
-                  ->send(new AppointmentMail($appointment, 'patient'));
-  
-              // Send email to doctor (cc)
-              Mail::to($doctorEmail)
-                  ->send(new AppointmentMail($appointment, 'doctor'));
-  
+            // Send email to both the patient and the doctor
+            $patient = Patient::find($appointment->patient_id);
+            $doctor = Doctor::find($appointment->doctor_id);
+            $patientEmail = $patient->user->email;
+            $doctorEmail = $doctor->user->email;
+
+            // Send email to patient
+            Mail::to($patientEmail)
+                ->send(new AppointmentMail($appointment, 'patient'));
+
+            // Send email to doctor (cc)
+            Mail::to($doctorEmail)
+                ->send(new AppointmentMail($appointment, 'doctor'));
+
 
             // dd($request->input('doctor_id'));
             $appointmentSlot = new AppointmentSlot();
@@ -405,6 +406,10 @@ class AppointmentController extends Controller
                     'review_id' => $firstReview->id,
                     'payment_id' => $payment->id,
                 ]);
+
+                $patient = Patient::find($appointment->patient_id);
+                $patientEmail = $patient->user->email;
+                Mail::to($patientEmail)->send(new AppointmentCompleteMail($appointment));
 
                 // After completing, redirect with a flag to show the review modal
                 $appointment->save();
