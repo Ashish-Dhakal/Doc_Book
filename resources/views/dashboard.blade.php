@@ -118,15 +118,6 @@
                                 @empty
                                     <li>No appointments today</li>
                                 @endforelse
-                                {{-- @foreach ($appointments as $appointment)
-                                    <li class="mb-2">
-                                        <span class="font-medium">{{ $appointment->doctor->user->f_name }}
-                                            {{ $appointment->doctor->user->l_name }}</span>
-                                        ({{ $appointment->doctor->speciality->name }})
-                                    </li>
-                                    {{ $appointment->date }} {{ $appointment->start_time }} -
-                                    {{ $appointment->end_time }}
-                                @endforeach --}}
                             </ul>
                         </div>
 
@@ -169,162 +160,246 @@
 
 
     @can('patient_access')
-        <div class="py-12 bg-gray-50">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                    <div class="p-6 bg-gradient-to-r from-indigo-100 via-indigo-200 to-indigo-300 border-b border-gray-200">
-                        <h3 class="text-2xl font-semibold text-gray-800">Patient Dashboard</h3>
+
+        <div class="min-vh-100 bg-light py-4">
+            <div class="container">
+                <div class="card border-0 shadow-lg rounded-3">
+                    <!-- Dashboard Header -->
+                    <div class="card-header border-0 p-4 bg-gradient text-white d-flex justify-content-between align-items-center"
+                        style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-hospital fs-3 me-3"></i>
+                            <h3 class="m-0 fw-bold">Patient Dashboard</h3>
+                        </div>
+                        <button type="button" class="btn btn-light btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>New Appointment
+                        </button>
                     </div>
 
-                    <!-- Doctor List Section -->
-                    <div class="space-y-8 mt-8 px-6 sm:px-8">
-                        <div class="bg-white shadow-lg rounded-lg p-6">
-                            <h4 class="text-xl font-semibold text-indigo-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-indigo-700" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M14 2a6 6 0 00-12 0v12a6 6 0 0012 0V2zm-2 10a4 4 0 01-8 0V4a4 4 0 018 0v8z" />
-                                </svg>
-                                Doctor List
-                            </h4>
-                            <ul class="space-y-4">
-                                @foreach ($doctors as $doctor)
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                                        <div class="flex justify-between items-center">
-                                            <div>
-                                                <p class="text-lg font-medium text-gray-800">
-                                                    {{ $doctor->user->f_name }} {{ $doctor->user->l_name }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">Speciality:
-                                                    {{ $doctor->speciality->name }}</p>
+                    <div class="card-body p-4">
+                        <!-- Doctor List Section -->
+                        <div class="mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-white border-bottom border-2 p-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-people-fill fs-4 text-primary me-2"></i>
+                                        <h5 class="m-0 fw-bold text-primary">Available Doctors</h5>
+                                    </div>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    @foreach ($doctors as $doctor)
+                                        <li class="list-group-item p-3 hover-bg-light">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                                            <i class="bi bi-person-circle fs-4 text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1 fw-bold">Dr. {{ $doctor->user->f_name }}
+                                                                {{ $doctor->user->l_name }}</h6>
+                                                            <span class="badge bg-primary bg-opacity-10 text-primary">
+                                                                {{ $doctor->speciality->name }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <div class="row g-2">
+                                                        @foreach ($doctor->appointmentSlots as $slot)
+                                                            <div class="col-md-6">
+                                                                <div class="card border border-light bg-light">
+                                                                    <div class="card-body p-2">
+                                                                        <div class="d-flex align-items-center mb-2">
+                                                                            <i
+                                                                                class="bi bi-calendar2-date text-primary me-2"></i>
+                                                                            <small
+                                                                                class="fw-semibold">{{ $slot->date }}</small>
+                                                                        </div>
+                                                                        <div class="d-flex align-items-center mb-2">
+                                                                            <i class="bi bi-clock text-primary me-2"></i>
+                                                                            <small>{{ $slot->start_time }} -
+                                                                                {{ $slot->end_time }}</small>
+                                                                        </div>
+                                                                        <div class="d-flex align-items-center">
+                                                                            <i class="bi bi-circle-fill text-{{ $slot->status === 'available' ? 'success' : 'danger' }} me-2"
+                                                                                style="font-size: 8px;"></i>
+                                                                            <small
+                                                                                class="text-capitalize">{{ $slot->status }}</small>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="text-sm text-gray-500">
-                                                @foreach ($doctor->appointmentSlots as $slot)
-                                                    <p class="mt-1">Date: {{ $slot->date }} | Time:
-                                                        {{ $slot->start_time }} - {{ $slot->end_time }} | Status:
-                                                        {{ $slot->status }}</p>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
 
-                        <!-- Appointments Section -->
-                        <div class="bg-white shadow-lg rounded-lg p-6">
-                            <h4 class="text-xl font-semibold text-green-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-green-700" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" d="M4 4a4 4 0 018 0v8a4 4 0 01-8 0V4z" clip-rule="evenodd" />
-                                </svg>
-                                Appointments
-                            </h4>
-                            <ul class="space-y-4">
-
-                                @forelse ($appointments_booked as $appointment)
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                                        <div class="flex justify-between items-center">
-                                            <div>
-                                                <p class="text-lg font-medium text-gray-800">
-                                                    Dr. {{ $appointment->doctor->user->f_name }}
-                                                    {{ $appointment->doctor->user->l_name }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">Date: {{ $appointment->date }} | Time:
-                                                    {{ $appointment->start_time }} - {{ $appointment->end_time }}</p>
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                <p class="mt-1">Review:
-                                                    {{ $appointment->review ? $appointment->review->comment : 'No comment on this appointment' }}
-                                                </p>
-                                            </div>
+                        <!-- Appointments Grid -->
+                        <div class="row g-4">
+                            <!-- Current Appointments -->
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-header border-0 bg-success bg-gradient p-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar2-check fs-4 text-white me-2"></i>
+                                            <h5 class="m-0 text-white fw-bold">Current Appointments</h5>
                                         </div>
-                                    </li>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            @forelse ($appointments_booked as $appointment)
+                                                <li class="list-group-item p-3">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 me-3">
+                                                            <i class="bi bi-person-circle fs-5 text-success"></i>
+                                                        </div>
+                                                        <h6 class="mb-0 fw-bold">Dr.
+                                                            {{ $appointment->doctor->user->f_name }}
+                                                            {{ $appointment->doctor->user->l_name }}</h6>
+                                                    </div>
+                                                    <div class="ms-5">
+                                                        <p class="mb-1 small">
+                                                            <i class="bi bi-calendar2-date text-success me-2"></i>
+                                                            {{ $appointment->date }}
+                                                        </p>
+                                                        <p class="mb-1 small">
+                                                            <i class="bi bi-clock text-success me-2"></i>
+                                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
+                                                        </p>
+                                                        @if ($appointment->review)
+                                                            <div class="bg-light rounded p-2 mt-2">
+                                                                <small class="text-muted">
+                                                                    <i class="bi bi-chat-quote me-2"></i>
+                                                                    {{ $appointment->review->comment }}
+                                                                </small>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </li>
+                                            @empty
+                                                <li class="list-group-item p-4 text-center text-muted">
+                                                    <i class="bi bi-calendar2-x fs-1"></i>
+                                                    <p class="mt-2 mb-0">No current appointments</p>
+                                                </li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
 
-                                @empty
-                                    <li>No appointments</li>
-                                @endforelse
-
-
-                            </ul>
-                        </div>
-
-                        <!-- Completed Appointments Section -->
-                        <div class="bg-white shadow-lg rounded-lg p-6">
-                            <h4 class="text-xl font-semibold text-blue-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-700" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M2 7.5C2 5.57 3.57 4 5.5 4h9a3.5 3.5 0 013.5 3.5v7a3.5 3.5 0 01-3.5 3.5H5.5A3.5 3.5 0 012 14.5v-7zM5.5 5a2.5 2.5 0 00-2.5 2.5v7a2.5 2.5 0 002.5 2.5h9a2.5 2.5 0 002.5-2.5v-7a2.5 2.5 0 00-2.5-2.5h-9z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Completed Appointments
-                            </h4>
-                            <ul class="space-y-4">
-                                @forelse ($appointments_completed as $appointment)
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                                        <div class="flex justify-between items-center">
-                                            <div>
-                                                <p class="text-lg font-medium text-gray-800">
-                                                    Dr. {{ $appointment->doctor->user->f_name }}
-                                                    {{ $appointment->doctor->user->l_name }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">Date: {{ $appointment->date }} | Time:
-                                                    {{ $appointment->start_time }} - {{ $appointment->end_time }}</p>
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                <p class="mt-1">Review:
-                                                    {{ $appointment->review ? $appointment->review->comment : 'No comment on this appointment' }}
-                                                </p>
-                                            </div>
+                            <!-- Completed Appointments -->
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-header border-0 bg-primary bg-gradient p-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check2-circle fs-4 text-white me-2"></i>
+                                            <h5 class="m-0 text-white fw-bold">Completed Appointments</h5>
                                         </div>
-                                    </li>
-                                @empty
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md text-gray-500">No completed appointments
-                                    </li>
-                                @endforelse
-                            </ul>
-                        </div>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            @forelse ($appointments_completed as $appointment)
+                                                <li class="list-group-item p-3">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                                            <i class="bi bi-person-circle fs-5 text-primary"></i>
+                                                        </div>
+                                                        <h6 class="mb-0 fw-bold">Dr.
+                                                            {{ $appointment->doctor->user->f_name }}
+                                                            {{ $appointment->doctor->user->l_name }}</h6>
+                                                    </div>
+                                                    <div class="ms-5">
+                                                        <p class="mb-1 small">
+                                                            <i class="bi bi-calendar2-date text-primary me-2"></i>
+                                                            {{ $appointment->date }}
+                                                        </p>
+                                                        <p class="mb-1 small">
+                                                            <i class="bi bi-clock text-primary me-2"></i>
+                                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
+                                                        </p>
+                                                        @if ($appointment->review)
+                                                            <div class="bg-light rounded p-2 mt-2">
+                                                                <small class="text-muted">
+                                                                    <i class="bi bi-chat-quote me-2"></i>
+                                                                    {{ $appointment->review->comment }}
+                                                                </small>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </li>
+                                            @empty
+                                                <li class="list-group-item p-4 text-center text-muted">
+                                                    <i class="bi bi-calendar2-x fs-1"></i>
+                                                    <p class="mt-2 mb-0">No completed appointments</p>
+                                                </li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- Canceled Appointments Section -->
-                        <div class="bg-white shadow-lg rounded-lg p-6">
-                            <h4 class="text-xl font-semibold text-red-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-red-700" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M10 1a9 9 0 11-9 9 9 9 0 019-9zm0 2a7 7 0 107 7 7 7 0 00-7-7z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Canceled Appointments
-                            </h4>
-                            <ul class="space-y-4">
-                                @forelse ($appointments_cancled as $appointment)
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                                        <div class="flex justify-between items-center">
-                                            <div>
-                                                <p class="text-lg font-medium text-gray-800">
-                                                    Dr. {{ $appointment->doctor->user->f_name }}
-                                                    {{ $appointment->doctor->user->l_name }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">Date: {{ $appointment->date }} | Time:
-                                                    {{ $appointment->start_time }} - {{ $appointment->end_time }}</p>
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                <p class="mt-1">Review:
-                                                    {{ $appointment->review ? $appointment->review->comment : 'No comment on this appointment' }}
-                                                </p>
-                                            </div>
+                            <!-- Canceled Appointments -->
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-header border-0 bg-danger bg-gradient p-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-x-circle fs-4 text-white me-2"></i>
+                                            <h5 class="m-0 text-white fw-bold">Canceled Appointments</h5>
                                         </div>
-                                    </li>
-                                @empty
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md text-gray-500">No canceled appointments
-                                    </li>
-                                @endforelse
-                            </ul>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            @forelse ($appointments_cancled as $appointment)
+                                                <li class="list-group-item p-3">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <div class="rounded-circle bg-danger bg-opacity-10 p-2 me-3">
+                                                            <i class="bi bi-person-circle fs-5 text-danger"></i>
+                                                        </div>
+                                                        <h6 class="mb-0 fw-bold">Dr.
+                                                            {{ $appointment->doctor->user->f_name }}
+                                                            {{ $appointment->doctor->user->l_name }}</h6>
+                                                    </div>
+                                                    <div class="ms-5">
+                                                        <p class="mb-1 small">
+                                                            <i class="bi bi-calendar2-date text-danger me-2"></i>
+                                                            {{ $appointment->date }}
+                                                        </p>
+                                                        <p class="mb-1 small">
+                                                            <i class="bi bi-clock text-danger me-2"></i>
+                                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
+                                                        </p>
+                                                        @if ($appointment->review)
+                                                            <div class="bg-light rounded p-2 mt-2">
+                                                                <small class="text-muted">
+                                                                    <i class="bi bi-chat-quote me-2"></i>
+                                                                    {{ $appointment->review->comment }}
+                                                                </small>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </li>
+                                            @empty
+                                                <li class="list-group-item p-4 text-center text-muted">
+                                                    <i class="bi bi-calendar2-x fs-1"></i>
+                                                    <p class="mt-2 mb-0">No canceled appointments</p>
+                                                </li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
 
     @endcan
 </x-app-layout>
