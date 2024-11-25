@@ -22,16 +22,16 @@
             <div class="card-body">
                 <!-- Conditional Greeting -->
                 @if ($recipientType == 'doctor')
-                    <p class="h5">Dear Dr. <strong class="text-primary">{{ $appointment->doctor->user->f_name }}</strong>,</p>
+                    <p class="h5">Dear Dr. <strong class="text-primary">{{ $appointment->doctor->user->f_name }} {{ $appointment->doctor->user->l_name }} </strong>,</p>
                     <p class="lead mb-4">A new appointment has been scheduled with the following details:</p>
                     <ul class="list-unstyled">
-                        <li><strong class="font-weight-bold">Patient Name:</strong> {{ $appointment->patient->user->f_name }}</li>
+                        <li><strong class="font-weight-bold">Patient Name:</strong> {{ $appointment->patient->user->f_name }} {{ $appointment->patient->user->l_name }}</li>
                         <li><strong class="font-weight-bold">Date:</strong> {{ \Carbon\Carbon::parse($appointment->date)->format('F j, Y, g:i a') }}</li>
                     </ul>
                     <p class="lead mb-4">Please log in to your dashboard for more details.</p>
                 @elseif ($recipientType == 'patient')
-                    <p class="h5">Dear {{ $appointment->patient->user->f_name }},</p>
-                    <p class="lead mb-4">You have a new appointment scheduled with Dr. <strong class="text-primary">{{ $appointment->doctor->user->f_name }}</strong>.</p>
+                    <p class="h5">Dear {{ $appointment->patient->user->f_name }} {{ $appointment->patient->user->l_name }},</p>
+                    <p class="lead mb-4">You have a new appointment scheduled with Dr. <strong class="text-primary">{{ $appointment->doctor->user->f_name }} {{ $appointment->doctor->user->l_name }}</strong>.</p>
                     <ul class="list-unstyled">
                         <li><strong class="font-weight-bold">Appointment Date:</strong> {{ \Carbon\Carbon::parse($appointment->date)->format('F j, Y, g:i a') }}</li>
                     </ul>
