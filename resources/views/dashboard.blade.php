@@ -165,8 +165,10 @@
                                                         @foreach ($doctor->appointmentSlots as $slot)
                                                             <div class="mb-1 small">
                                                                 <span class="text-muted">{{ $slot->date }}</span> |
-                                                                <span class="fw-medium">{{ $slot->start_time }} -
-                                                                    {{ $slot->end_time }}</span> |
+                                                                <span class="fw-medium">
+                                                                    {{ \Carbon\Carbon::parse( $slot->start_time )->format('g:i A') }}
+                                                                    -
+                                                                    {{ \Carbon\Carbon::parse( $slot->end_time )->format('g:i A') }}> |
                                                                 <span
                                                                     class="badge bg-{{ $slot->status === 'available' ? 'success' : 'danger' }}">
                                                                     {{ $slot->status }}
@@ -223,8 +225,8 @@
                                                             </div>
                                                             <div class="small text-muted">
                                                                 <i class="bi bi-clock me-1"></i>
-                                                                {{ $appointment->start_time }} -
-                                                                {{ $appointment->end_time }}
+                                                                {{ \Carbon\Carbon::parse( $appointment->start_time )->format('g:i A') }} -
+                                                                {{ \Carbon\Carbon::parse( $appointment->end_time )->format('g:i A') }}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -273,7 +275,7 @@
                                                             </div>
                                                             <div class="small text-muted">
                                                                 <i class="bi bi-clock me-1"></i>
-                                                                {{ $appointment->start_time }}
+                                                                {{ \Carbon\Carbon::parse( $appointment->start_time )->format('g:i A') }}
                                                             </div>
                                                         </div>
                                                         <div class="col-md-2">
@@ -443,9 +445,10 @@
                                                                                 <i
                                                                                     class="bi bi-clock text-primary me-2"></i>
                                                                                 <small
-                                                                                    class="text-dark">{{ $slot->start_time }}
+                                                                                    class="text-dark">
+                                                                                    {{ \Carbon\Carbon::parse( $slot->start_time )->format('g:i A') }}
                                                                                     -
-                                                                                    {{ $slot->end_time }}</small>
+                                                                                    {{ \Carbon\Carbon::parse( $slot->end_time )->format('g:i A') }}</small>
                                                                             </div>
                                                                             <div class="d-flex align-items-center">
                                                                                 <i class="bi bi-circle-fill text-{{ $slot->status === 'available' ? 'success' : 'danger' }} me-2"
@@ -499,7 +502,8 @@
                                                         </p>
                                                         <p class="mb-1 small">
                                                             <i class="bi bi-clock text-success me-2"></i>
-                                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
+                                                            {{ \Carbon\Carbon::parse( $appointment->start_time )->format('g:i A') }} - 
+                                                            {{ \Carbon\Carbon::parse( $appointment->end_time )->format('g:i A') }}
                                                         </p>
                                                         @if ($appointment->review)
                                                             <div class="bg-light rounded p-2 mt-2">
@@ -550,7 +554,8 @@
                                                         </p>
                                                         <p class="mb-1 small">
                                                             <i class="bi bi-clock text-primary me-2"></i>
-                                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
+                                                            {{ \Carbon\Carbon::parse($appointment->start_time   )->format('g:i A') }} - 
+                                                            {{ \Carbon\Carbon::parse($appointment->end_time  )->format('g:i A') }}
                                                         </p>
                                                         @if ($appointment->review)
                                                             <div class="bg-light rounded p-2 mt-2">
@@ -601,7 +606,8 @@
                                                         </p>
                                                         <p class="mb-1 small">
                                                             <i class="bi bi-clock text-danger me-2"></i>
-                                                            {{ $appointment->start_time }} - {{ $appointment->end_time }}
+                                                            {{ \Carbon\Carbon::parse($appointment->start_time   )->format('g:i A') }} - 
+                                                            {{ \Carbon\Carbon::parse($appointment->end_time  )->format('g:i A') }}
                                                         </p>
                                                         @if ($appointment->review)
                                                             <div class="bg-light rounded p-2 mt-2">
