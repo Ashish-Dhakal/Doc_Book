@@ -107,7 +107,6 @@ class AppointmentController extends Controller
 
         if ($endTimeCarbon->lt($startTimeCarbon)) {
             return redirect()->back()->with('error', 'End time should be after start time.');
-
         }
 
         // check if the doctor is availabelin that time or not
@@ -122,6 +121,22 @@ class AppointmentController extends Controller
         //             ->orWhere('status', 'booked');
         //     })
         //     ->first();
+
+        $conflict = Appointment::where('doctor_id', $doctorId)
+            ->where('date', $date)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('start_time', [$startTime, $endTime])
+                    ->orWhereBetween('end_time', [$startTime, $endTime])
+                    ->orWhere(function ($query) use ($startTime, $endTime) {
+                        $query->where('start_time', '<=', $startTime)
+                            ->where('end_time', '>=', $endTime);
+                    });
+            })
+            ->exists();
+
+        if ($conflict) {
+            return redirect()->back()->with('error', 'The selected time slot is already booked for this doctor.');
+        }
 
 
         $appointmentSlots = AppointmentSlot::where('doctor_id', $doctorId)
@@ -139,7 +154,6 @@ class AppointmentController extends Controller
             ->first();
         if ($appointmentSlots) {
             return redirect()->back()->with('error', 'Doctor is not available at that time.');
-
         }
 
 
@@ -206,10 +220,9 @@ class AppointmentController extends Controller
     public function edit($id)
     {
         $appointment = Appointment::find($id);
-      if($appointment->status == 'completed'){
-        return redirect()->route('appointments.index')->with('error', 'This appointment is already completed and cannot be modified.');
-          
-      }
+        if ($appointment->status == 'completed') {
+            return redirect()->route('appointments.index')->with('error', 'This appointment is already completed and cannot be modified.');
+        }
 
         if (!$appointment) {
             abort(404, 'Appointment not found');
@@ -342,12 +355,12 @@ class AppointmentController extends Controller
                 // Calculate the total fee
                 $totalFee = $durationInHours * $appointment->doctor->hourly_rate;
 
-                $payment =Payment::create([
+                $payment = Payment::create([
                     'appointment_id' => $appointment->id,
                     'amount' => $totalFee,
                     'patient_id' => $appointment->patient_id,
                 ]);
-               
+
                 PatientHistory::create([
                     'appointment_id' => $appointment->id,
                     'patient_id' => $appointment->patient_id,
