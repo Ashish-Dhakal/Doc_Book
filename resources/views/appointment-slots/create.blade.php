@@ -72,8 +72,6 @@
                                 <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                                 <select name="status" id="status"
                                     class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="available" {{ old('status') == 'available' ? 'selected' : '' }}>
-                                        Available</option>
                                     <option value="booked" {{ old('status') == 'booked' ? 'selected' : '' }}>Booked
                                     </option>
                                     <option value="unavailable" {{ old('status') == 'unavailable' ? 'selected' : '' }}>Unavailable
