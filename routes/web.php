@@ -5,14 +5,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Auth\Events\Registered;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\RoleCheckMiddleware;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\SpecialityController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentSlotController;
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
@@ -44,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/reviews', ReviewController::class);
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
+    Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
 
 
 });

@@ -62,4 +62,19 @@ class DoctorController extends Controller
     {
         //
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->get('query');
+    
+        $doctors = Doctor::with(['user', 'speciality', 'appointmentSlots'])
+            ->whereHas('user', function ($q) use ($query) {
+                $q->where('f_name', 'like', "%$query%")
+                  ->orWhere('l_name', 'like', "%$query%");
+            })
+            ->get();
+    
+        return response()->json(['doctors' => $doctors]);
+    }
+    
 }

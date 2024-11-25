@@ -126,8 +126,9 @@
                                         Doctor List
                                     </h4>
                                     <div class="input-group w-auto">
-                                        <input type="text" class="form-control" placeholder="Search doctors...">
-                                        <button class="btn btn-primary">
+                                        <input type="text" id="doctorSearch" class="form-control"
+                                            placeholder="Search doctors...">
+                                        <button class="btn btn-primary" id="searchButton">
                                             <i class="bi bi-search"></i>
                                         </button>
                                     </div>
@@ -144,7 +145,7 @@
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="doctorList">
                                             @foreach ($doctors as $doctor)
                                                 <tr>
                                                     <td class="px-4">
@@ -189,6 +190,7 @@
                                                 </tr>
                                             @endforeach
                                         </tbody>
+
                                     </table>
                                 </div>
                             </div>
@@ -304,6 +306,72 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            document.getElementById('doctorSearch').addEventListener('input', function() {
+                let query = this.value;
+
+                fetch(`/doctors/search?query=${query}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        let tbody = document.getElementById('doctorList');
+                        tbody.innerHTML = '';
+
+                        if (data.doctors.length > 0) {
+                            data.doctors.forEach(doctor => {
+                                let slots = doctor.appointment_slots.map(slot => `
+                    <div class="mb-1 small">
+                        <span class="text-muted">${slot.date}</span> |
+                        <span class="fw-medium">${slot.start_time} - ${slot.end_time}</span> |
+                        <span class="badge bg-${slot.status === 'available' ? 'success' : 'danger'}">
+                            ${slot.status}
+                        </span>
+                    </div>
+                `).join('');
+
+                                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-4">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                    <i class="bi bi-person-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">${doctor.user.f_name} ${doctor.user.l_name}</h6>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary bg-opacity-10 text-primary">
+                                ${doctor.speciality.name}
+                            </span>
+                        </td>
+                        <td>${slots}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                            });
+                        } else {
+                            tbody.innerHTML = `<tr><td colspan="4" class="text-center">No doctors found</td></tr>`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        </script>
     @endcan
 
 
