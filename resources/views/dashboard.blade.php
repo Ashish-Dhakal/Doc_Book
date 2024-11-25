@@ -45,112 +45,247 @@
     @endcan
 
     @can('admin_access')
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-700">Admin Dashboard</h3>
-
-                        <div class="bg-white shadow-lg rounded-lg p-6">
-                            <h4 class="text-xl font-semibold text-indigo-700 mb-4 flex items-center">
-                                Doctor List
-                            </h4>
-                            <ul class="space-y-4">
-                                @foreach ($doctors as $doctor)
-                                    <li class="bg-gray-50 p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                                        <div class="flex justify-between items-center">
-                                            <div>
-                                                <p class="text-lg font-medium text-gray-800">
-                                                    {{ $doctor->user->f_name }} {{ $doctor->user->l_name }}
-                                                </p>
-                                                <p class="text-sm text-gray-500">Speciality:
-                                                    {{ $doctor->speciality->name }}</p>
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                @foreach ($doctor->appointmentSlots as $slot)
-                                                    <p class="mt-1">Date: {{ $slot->date }} | Time:
-                                                        {{ $slot->start_time }} - {{ $slot->end_time }} | Status:
-                                                        {{ $slot->status }}</p>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
+        <div class="py-5 bg-light min-vh-100">
+            <div class="container">
+                <div class="card border-0 shadow-lg rounded-3">
+                    <div class="card-body p-4">
+                        <!-- Dashboard Header -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="text-primary fw-bold mb-0">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                Admin Dashboard
+                            </h3>
+                            <button class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Add New Doctor
+                            </button>
                         </div>
 
-                        <div class="mt-6 flex-auto">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <!-- Total Patients -->
-                                <div class="bg-gray-100 p-4 rounded-lg shadow">
-                                    <h4 class="text-xl font-semibold text-gray-600">Total Patients</h4>
-                                    <p class="text-2xl font-bold text-gray-900">{{ $patients->count() }}</p>
+                        <!-- Statistics Cards -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="rounded-circle bg-primary p-3 me-3">
+                                                <i class="bi bi-people-fill text-white fs-4"></i>
+                                            </div>
+                                            <h4 class="fw-bold text-primary mb-0">Total Patients</h4>
+                                        </div>
+                                        <h2 class="display-4 fw-bold text-primary mb-0">{{ $patients->count() }}</h2>
+                                    </div>
                                 </div>
-
-                                <!-- Total Doctors -->
-                                <div class="bg-gray-100 p-4 rounded-lg shadow">
-                                    <h4 class="text-xl font-semibold text-gray-600">Total Doctors</h4>
-                                    <p class="text-2xl font-bold text-gray-900">{{ $doctors->count() }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-success bg-opacity-10 h-100">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="rounded-circle bg-success p-3 me-3">
+                                                <i class="bi bi-hospital-fill text-white fs-4"></i>
+                                            </div>
+                                            <h4 class="fw-bold text-success mb-0">Total Doctors</h4>
+                                        </div>
+                                        <h2 class="display-4 fw-bold text-success mb-0">{{ $doctors->count() }}</h2>
+                                    </div>
                                 </div>
-
-                                <!-- Total Specialities -->
-                                <div class="bg-gray-100 p-4 rounded-lg shadow">
-                                    <h4 class="text-xl font-semibold text-gray-600">Total Specialities</h4>
-                                    <p class="text-2xl font-bold text-gray-900">{{ $speciality->count() }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-0 bg-info bg-opacity-10 h-100">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="rounded-circle bg-info p-3 me-3">
+                                                <i class="bi bi-clipboard2-pulse-fill text-white fs-4"></i>
+                                            </div>
+                                            <h4 class="fw-bold text-info mb-0">Total Specialities</h4>
+                                        </div>
+                                        <h2 class="display-4 fw-bold text-info mb-0">{{ $speciality->count() }}</h2>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-
-                        <div class="mt-8">
-                            <!-- Doctors with Appointments Today -->
-                            <h4 class="text-lg font-semibold text-gray-700">Doctors with Appointments Today</h4>
-                            <ul class="mt-4">
-                                @forelse ($appointments as $appointment)
-                                    <li class="mb-2">
-                                        <span class="font-medium">{{ $appointment->doctor->user->f_name }}
-                                            {{ $appointment->doctor->user->l_name }}</span>
-                                        ({{ $appointment->doctor->speciality->name }})
-                                    </li>
-                                    {{-- appointment time --}}
-                                    {{ $appointment->date }} {{ $appointment->start_time }} -
-                                    {{ $appointment->end_time }}
-                                @empty
-                                    <li>No appointments today</li>
-                                @endforelse
-                            </ul>
+                        <!-- Doctor List -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white p-4 border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h4 class="fw-bold text-primary mb-0">
+                                        <i class="bi bi-people me-2"></i>
+                                        Doctor List
+                                    </h4>
+                                    <div class="input-group w-auto">
+                                        <input type="text" class="form-control" placeholder="Search doctors...">
+                                        <button class="btn btn-primary">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th class="px-4">Doctor Name</th>
+                                                <th>Speciality</th>
+                                                <th>Appointment Slots</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($doctors as $doctor)
+                                                <tr>
+                                                    <td class="px-4">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                                                <i class="bi bi-person-circle text-primary"></i>
+                                                            </div>
+                                                            <div>
+                                                                <h6 class="mb-0 fw-bold">{{ $doctor->user->f_name }}
+                                                                    {{ $doctor->user->l_name }}</h6>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                                                            {{ $doctor->speciality->name }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @foreach ($doctor->appointmentSlots as $slot)
+                                                            <div class="mb-1 small">
+                                                                <span class="text-muted">{{ $slot->date }}</span> |
+                                                                <span class="fw-medium">{{ $slot->start_time }} -
+                                                                    {{ $slot->end_time }}</span> |
+                                                                <span
+                                                                    class="badge bg-{{ $slot->status === 'available' ? 'success' : 'danger' }}">
+                                                                    {{ $slot->status }}
+                                                                </span>
+                                                            </div>
+                                                        @endforeach
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <button class="btn btn-sm btn-outline-primary">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-danger">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mt-8">
+                        <div class="row g-4">
+                            <!-- Today's Appointments -->
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-header bg-white border-0 p-4">
+                                        <h4 class="fw-bold text-success mb-0">
+                                            <i class="bi bi-calendar2-check me-2"></i>
+                                            Today's Appointments
+                                        </h4>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            @forelse ($appointments as $appointment)
+                                                <li class="list-group-item p-4">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-1 fw-bold">Dr.
+                                                                {{ $appointment->doctor->user->f_name }}
+                                                                {{ $appointment->doctor->user->l_name }}</h6>
+                                                            <span class="badge bg-success bg-opacity-10 text-success">
+                                                                {{ $appointment->doctor->speciality->name }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <div class="small text-muted">
+                                                                <i class="bi bi-calendar3 me-1"></i>
+                                                                {{ $appointment->date }}
+                                                            </div>
+                                                            <div class="small text-muted">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                {{ $appointment->start_time }} -
+                                                                {{ $appointment->end_time }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            @empty
+                                                <li class="list-group-item p-4 text-center text-muted">
+                                                    <i class="bi bi-calendar2-x fs-1"></i>
+                                                    <p class="mt-2 mb-0">No appointments scheduled for today</p>
+                                                </li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Pending Appointments -->
-                            <h4 class="text-lg font-semibold text-gray-700">Pending Appointments</h4>
-                            <ul class="mt-4">
-                                @foreach ($pending_appointments as $appointment)
-                                    <li class="mb-2">
-                                        Patient: {{ $appointment->patient->user->f_name }}
-                                        {{ $appointment->patient->user->l_name }}
-                                        - Doctor: {{ $appointment->doctor->user->f_name }}
-                                        {{ $appointment->doctor->user->l_name }}
-                                        - Date: {{ $appointment->date }} {{ $appointment->start_time }}
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-
-                        <div class="mt-8">
-                            <!-- Unavailable and Booked Appointment Slots -->
-                            <h4 class="text-lg font-semibold text-gray-700">Unavailable and Booked Appointment Slots Status
-                            </h4>
-                            <ul class="mt-4">
-                                @foreach ($pending_appointments as $slot)
-                                    <li class="mb-2">
-                                        Doctor: {{ $slot->doctor->user->f_name }} {{ $slot->doctor->user->l_name }}
-                                        - Date: {{ $slot->date }}
-                                        - Time: {{ $slot->start_time }} - {{ $slot->end_time }}
-                                        -status: {{ $slot->status }}
-                                    </li>
-                                @endforeach
-                            </ul>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-header bg-white border-0 p-4">
+                                        <h4 class="fw-bold text-warning mb-0">
+                                            <i class="bi bi-hourglass-split me-2"></i>
+                                            Pending Appointments
+                                        </h4>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <ul class="list-group list-group-flush">
+                                            @forelse ($pending_appointments as $appointment)
+                                                <li class="list-group-item p-4">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-6">
+                                                            <h6 class="mb-1">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                {{ $appointment->patient->user->f_name }}
+                                                                {{ $appointment->patient->user->l_name }}
+                                                            </h6>
+                                                            <h6 class="mb-0">
+                                                                <i class="bi bi-hospital me-2 text-success"></i>
+                                                                Dr. {{ $appointment->doctor->user->f_name }}
+                                                                {{ $appointment->doctor->user->l_name }}
+                                                            </h6>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="small text-muted">
+                                                                <i class="bi bi-calendar3 me-1"></i>
+                                                                {{ $appointment->date }}
+                                                            </div>
+                                                            <div class="small text-muted">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                {{ $appointment->start_time }}
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <div class="btn-group">
+                                                                <button class="btn btn-sm btn-success">
+                                                                    <i class="bi bi-check-lg"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-danger">
+                                                                    <i class="bi bi-x-lg"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            @empty
+                                                <li class="list-group-item p-4 text-center text-muted">
+                                                    <i class="bi bi-inbox fs-1"></i>
+                                                    <p class="mt-2 mb-0">No pending appointments</p>
+                                                </li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
