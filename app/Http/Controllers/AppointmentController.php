@@ -106,7 +106,8 @@ class AppointmentController extends Controller
 
 
         if ($endTimeCarbon->lt($startTimeCarbon)) {
-            return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
+            return redirect()->back()->with('error', 'End time should be after start time.');
+
         }
 
         // check if the doctor is availabelin that time or not
@@ -137,7 +138,8 @@ class AppointmentController extends Controller
             })
             ->first();
         if ($appointmentSlots) {
-            return redirect()->back()->withErrors(['start_time' => 'Doctor is not available in that time.']);
+            return redirect()->back()->with('error', 'Doctor is not available at that time.');
+
         }
 
 

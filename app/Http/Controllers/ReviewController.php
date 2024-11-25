@@ -29,8 +29,6 @@ class ReviewController extends Controller
      */
     public function store(Request $request)
     {
-        // Log request data for debugging
-        \Log::debug($request->toArray());
 
         // Validate the request
         $validated = $request->validate([
@@ -46,6 +44,7 @@ class ReviewController extends Controller
                 $pdfPath = $request->file('pdf')->store('reviews/pdfs', 'public');
             } else {
                 \Log::error('PDF upload failed: Invalid file or error during upload');
+                return redirect()->back()->with('error', 'The uploaded file is invalid.');
             }
         }
 

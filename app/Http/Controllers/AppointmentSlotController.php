@@ -52,7 +52,9 @@ class AppointmentSlotController extends Controller
         // Check if end time is before start time
         if ($endTimeCarbon->lt($startTimeCarbon)) {
             // If end time is earlier than start time, return an error response
-            return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
+            // return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
+            return redirect()->back()->with('error', 'End time should be after start time.');
+
         }
 
         $appointmentSlot = new AppointmentSlot();
@@ -62,7 +64,9 @@ class AppointmentSlotController extends Controller
         $appointmentSlot->end_time = $request->input('end_time');
         $appointmentSlot->status = $request->input('status');
         $appointmentSlot->save();
-        return redirect()->route('appointment-slots.index')->with('success', 'Appointment Slot created successfully');
+        // return redirect()->route('appointment-slots.index')->with('success', 'Appointment Slot created successfully');
+        return redirect()->route('appointment-slots.index')->with('success', 'Appointment Slot created successfully.');
+
     }
 
     /**
