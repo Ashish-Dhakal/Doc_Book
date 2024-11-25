@@ -4,15 +4,17 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Doctor;
+use App\Models\Review;
 use App\Models\Patient;
 use App\Models\Payment;
 use App\Models\Speciality;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
-use App\Models\AppointmentSlot;
+use App\Mail\AppointmentMail;
 use App\Models\PatientHistory;
-use App\Models\Review;
+use App\Models\AppointmentSlot;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 
@@ -132,7 +134,7 @@ class AppointmentController extends Controller
                             ->where('end_time', '>=', $endTime);
                     });
             })
-            ->where('status' , ['pending' , 'booked' ] )
+            ->where('status', ['pending', 'booked'])
             ->exists();
 
         if ($conflict) {
@@ -169,6 +171,23 @@ class AppointmentController extends Controller
             $appointment->date = $request->input('date');
             $appointment->start_time = $request->input('start_time');
             $appointment->end_time = $request->input('end_time');
+
+
+
+            // Send email to both the patient and the doctor
+            $doctor = Doctor::find($appointment->doctor_id);
+            $patientEmail = $patient->user->email;
+            $doctorEmail = $doctor->user->email;
+
+            // Send email to patient
+            Mail::to($patientEmail)
+                ->send(new AppointmentMail($appointment, 'patient'));
+
+            // Send email to doctor (cc)
+            Mail::to($doctorEmail)
+                ->send(new AppointmentMail($appointment, 'doctor'));
+
+
             $appointment->save();
             return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
         } elseif (Auth::user()->roles == 'admin') {
@@ -180,6 +199,21 @@ class AppointmentController extends Controller
             $appointment->end_time = $request->input('end_time');
             $appointment->status = 'booked';
             $appointment->save();
+
+              // Send email to both the patient and the doctor
+              $patient = Patient::find($appointment->patient_id);
+              $doctor = Doctor::find($appointment->doctor_id);
+              $patientEmail = $patient->user->email;
+              $doctorEmail = $doctor->user->email;
+  
+              // Send email to patient
+              Mail::to($patientEmail)
+                  ->send(new AppointmentMail($appointment, 'patient'));
+  
+              // Send email to doctor (cc)
+              Mail::to($doctorEmail)
+                  ->send(new AppointmentMail($appointment, 'doctor'));
+  
 
             // dd($request->input('doctor_id'));
             $appointmentSlot = new AppointmentSlot();
