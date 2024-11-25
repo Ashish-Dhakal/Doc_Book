@@ -12,31 +12,44 @@
         </div>
     </x-slot>
     @can('doctor_access')
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 bg-white border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-700">Doctor Dashboard</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h4 text-secondary mb-4">Doctor Dashboard</h3>
 
-                            <!-- Total Patients -->
-                            <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-                                <h4 class="text-xl font-medium text-gray-700">Total Patients</h4>
-                                <p class="text-2xl font-semibold text-gray-800">{{ $totalPatients }}</p>
+                            <div class="row g-4">
+                                <!-- Total Patients -->
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="card bg-light h-100">
+                                        <div class="card-body">
+                                            <h4 class="h5 text-secondary">Total Patients</h4>
+                                            <p class="display-6 mb-0">{{ $totalPatients }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Completed Appointments -->
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="card bg-light h-100">
+                                        <div class="card-body">
+                                            <h4 class="h5 text-secondary">Completed Appointments</h4>
+                                            <p class="display-6 mb-0">{{ $completedAppointments }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Appointments Today -->
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="card bg-light h-100">
+                                        <div class="card-body">
+                                            <h4 class="h5 text-secondary">Appointments Today</h4>
+                                            <p class="display-6 mb-0">{{ $todayAppointments }}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-
-                            <!-- Completed Appointments -->
-                            <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-                                <h4 class="text-xl font-medium text-gray-700">Completed Appointments</h4>
-                                <p class="text-2xl font-semibold text-gray-800">{{ $completedAppointments }}</p>
-                            </div>
-
-                            <!-- Appointments Today -->
-                            <div class="bg-gray-100 p-4 rounded-lg shadow-md">
-                                <h4 class="text-xl font-medium text-gray-700">Appointments Today</h4>
-                                <p class="text-2xl font-semibold text-gray-800">{{ $todayAppointments }}</p>
-                            </div>
-
                         </div>
                     </div>
                 </div>
