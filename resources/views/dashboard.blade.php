@@ -68,10 +68,7 @@
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Admin Dashboard
                             </h3>
-                            <button class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-2"></i>
-                                Add New Doctor
-                            </button>
+                            <a href="{{route('users.index')}}"  class="btn btn-primary">Add New User</a>
                         </div>
 
                         <!-- Statistics Cards -->
@@ -387,9 +384,7 @@
                             <i class="bi bi-hospital fs-3 me-3"></i>
                             <h3 class="m-0 fw-bold">Patient Dashboard</h3>
                         </div>
-                        <button type="button" class="btn btn-light btn-lg">
-                            <i class="bi bi-plus-circle me-2"></i>New Appointment
-                        </button>
+                        <a href="{{route('appointments.index')}}" class="btn btn-light btn-lg">New Appointment</a>
                     </div>
 
                     <div class="card-body p-4">
