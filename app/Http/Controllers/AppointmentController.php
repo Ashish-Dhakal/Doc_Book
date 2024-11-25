@@ -132,6 +132,7 @@ class AppointmentController extends Controller
                             ->where('end_time', '>=', $endTime);
                     });
             })
+            ->where('status' , ['pending' , 'booked' ] )
             ->exists();
 
         if ($conflict) {
@@ -341,7 +342,7 @@ class AppointmentController extends Controller
                         ->where('end_time', $appointment->end_time)
                         ->delete();
                 }
-                if (!$appointment->review) {
+                if (!$appointment->reviews) {
                     return back()->with('error', 'Please add review first');
                 }
 
@@ -361,11 +362,13 @@ class AppointmentController extends Controller
                     'patient_id' => $appointment->patient_id,
                 ]);
 
+                $firstReview = $appointment->reviews->first();
+
                 PatientHistory::create([
                     'appointment_id' => $appointment->id,
                     'patient_id' => $appointment->patient_id,
                     'doctor_id' => $appointment->doctor_id,
-                    'review_id' => $appointment->review->id,
+                    'review_id' => $firstReview->id,
                     'payment_id' => $payment->id,
                 ]);
 
