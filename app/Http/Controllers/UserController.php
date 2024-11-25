@@ -7,6 +7,7 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Speciality;
 use Illuminate\Http\Request;
+use App\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UserRequest\UserCreateRequest;
 use App\Http\Requests\UserRequest\UserUpdateRequest;
@@ -46,12 +47,15 @@ class UserController extends Controller
             'roles' => $request->roles,
             'password' => bcrypt($request->password),
         ]);
+        $user->notify(new VerifyEmail($user));
+
 
         if ($user->roles == 'patient') {
             Patient::create([
                 'user_id' => $user->id,
 
             ]);
+            return redirect()->route('users.index')->with('success', 'Patient created successfully');
         }
         if ($user->roles == 'doctor') {
             Doctor::create([
@@ -59,11 +63,12 @@ class UserController extends Controller
                 'speciality_id' => $request->speciality_id,
                 'hourly_rate' => $request->hourly_rate,
             ]);
+            return redirect()->route('users.index')->with('success', 'Doctor created successfully');
         }
 
 
 
-        return redirect()->route('users.index')->with('success', 'User created successfully');
+      
     }
 
     /**

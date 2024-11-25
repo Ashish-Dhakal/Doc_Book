@@ -39,11 +39,11 @@ class VerifyEmail extends Notification
 
         return (new MailMessage)
             ->subject('Verify Email')
-            ->greeting('Hello,' . ' ' . $this->user->name)
+            ->greeting('Hello,' . ' ' . $this->user->f_name . ' ' . $this->user->l_name)
             ->line('Please click the button below to verify your email adderss.')
             ->action('Verify Email', $url)
             ->line('Thank you for using our application!')
-            ->salutation('Best Regards, Infinity Profile Team');
+            ->salutation('Best Regards, DocBook Team');
     }
 
 
