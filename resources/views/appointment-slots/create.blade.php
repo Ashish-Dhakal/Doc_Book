@@ -50,7 +50,7 @@
                                     Time</label>
                                 <input type="time" id="start_time" name="start_time" value="{{ old('start_time') }}"
                                     class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    required>
+                                    required min="09:00" max="17:00">
                                 @error('start_time')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -61,7 +61,7 @@
                                 <label for="end_time" class="block text-sm font-medium text-gray-700">End Time</label>
                                 <input type="time" id="end_time" name="end_time" value="{{ old('end_time') }}"
                                     class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    required>
+                                    required min="09:00" max="17:00">
                                 @error('end_time')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror

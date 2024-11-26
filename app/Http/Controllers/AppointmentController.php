@@ -409,7 +409,7 @@ class AppointmentController extends Controller
 
                 $patient = Patient::find($appointment->patient_id);
                 $patientEmail = $patient->user->email;
-                Mail::to($patientEmail)->send(new AppointmentCoppaympleteMail($appointment));
+                Mail::to($patientEmail)->send(new AppointmentCompleteMail($appointment));
 
                 // After completing, redirect with a flag to show the review modal
                 $appointment->save();

@@ -39,7 +39,7 @@ class AppointmentPolicy
     {
         if ($user->roles === 'admin') {
             return true;
-        } elseif ($user->roles === 'doctor' && $appointment->patient_id === $this->userId()) {
+        } elseif ($user->roles === 'doctor' && $appointment->doctor_id === $this->userId()) {
             return true;
         } elseif ($user->roles === 'patient' && $appointment->patient_id === $this->userId()) {
             return true;
