@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'phone' => '1234567890',
             'address' => 'Kathmandu',
+            'email_verified_at' => now(),
 
         ]);
 
@@ -59,6 +60,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
             'phone' => '1234567890',
             'address' => 'Kathmandu',
+            'email_verified_at' => now(),
 
         ]);
 
