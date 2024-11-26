@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('amount');
             $table->enum('payment_type', ['online', 'cash' ,'-'])->default('-');
             $table->enum('payment_status', ['pending', 'completed'])->default('pending');
+            $table->string('transaction_id')->nullable();
             $table->timestamps();
         });
     }

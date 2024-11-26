@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8f1006cce66f68cf30823930ea1b4bbc",
+    "content-hash": "1f0417897f57897000fee16dd92fa681",
     "packages": [
         {
             "name": "brick/math",
@@ -134,6 +134,65 @@
                 }
             ],
             "time": "2024-02-09T16:56:22+00:00"
+        },
+        {
+            "name": "cixware/esewa-php-sdk",
+            "version": "3.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/remotemerge/esewa-php-sdk.git",
+                "reference": "d71f696c1f5034840d378050c6e419325889cd33"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/remotemerge/esewa-php-sdk/zipball/d71f696c1f5034840d378050c6e419325889cd33",
+                "reference": "d71f696c1f5034840d378050c6e419325889cd33",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-simplexml": "*",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.62.0",
+                "phpunit/phpunit": "^10.5.30",
+                "rector/rector": "^1.2.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "RemoteMerge\\Esewa\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Madan Sapkota",
+                    "email": "contact+github@madansapkota.com",
+                    "homepage": "https://madansapkota.com"
+                }
+            ],
+            "description": "eSewa payment gateway integration in PHP.",
+            "homepage": "https://github.com/remotemerge/esewa-php-sdk",
+            "keywords": [
+                "api",
+                "esewa",
+                "gateway",
+                "nepal",
+                "payment",
+                "php",
+                "token"
+            ],
+            "support": {
+                "issues": "https://github.com/remotemerge/esewa-php-sdk/issues",
+                "source": "https://github.com/remotemerge/esewa-php-sdk/tree/v3.1.0"
+            },
+            "abandoned": "remotemerge/esewa-php-sdk",
+            "time": "2024-08-24T12:15:00+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -5612,6 +5671,42 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.11.0"
             },
             "time": "2022-06-03T18:03:27+00:00"
+        },
+        {
+            "name": "xentixar/esewa-sdk",
+            "version": "v1.0.03",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/xentixar/esewa-sdk.git",
+                "reference": "26e80bc100a827280b86e5c619ea47ffb5b56a3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/xentixar/esewa-sdk/zipball/26e80bc100a827280b86e5c619ea47ffb5b56a3b",
+                "reference": "26e80bc100a827280b86e5c619ea47ffb5b56a3b",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Xentixar\\EsewaSdk\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "xentixar",
+                    "email": "xentixar@gmail.com"
+                }
+            ],
+            "support": {
+                "issues": "https://github.com/xentixar/esewa-sdk/issues",
+                "source": "https://github.com/xentixar/esewa-sdk/tree/v1.0.03"
+            },
+            "time": "2024-09-15T03:54:46+00:00"
         }
     ],
     "packages-dev": [

@@ -6,8 +6,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "cixware/esewa-php-sdk": "^3.1",
         "laravel/framework": "^11.9",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "xentixar/esewa-sdk": "^1.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",

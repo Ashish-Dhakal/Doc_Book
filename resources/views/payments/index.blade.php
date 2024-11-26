@@ -39,8 +39,10 @@
                                     <td class="px-4 py-2">{{ ucfirst($payment->payment_status) }}</td>
                                     <td class="px-4 py-2">{{ $payment->created_at->format('Y-m-d H:i') }}</td>
                                     <td class="px-4 py-2">
-                                        <a href=""
-                                            class="text-indigo-600 hover:text-indigo-800 transition duration-200">Pay</a>
+                                        <a href="{{ route('payment.pay', $payment->id) }}" 
+                                            class="text-indigo-600 hover:text-indigo-800 transition duration-200">
+                                            Pay
+                                         </a>
                                     </td>
                                 </tr>
                                     
