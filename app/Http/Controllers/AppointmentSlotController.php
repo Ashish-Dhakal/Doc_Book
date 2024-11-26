@@ -18,10 +18,10 @@ class AppointmentSlotController extends Controller
         if(Auth::user()->roles=='doctor'){
             $userId=Auth::user()->id;
             $doctor=Doctor::where('user_id',$userId)->first();
-            $appointmentSlots=AppointmentSlot::where('doctor_id',$doctor->id)->get();
+            $appointmentSlots=AppointmentSlot::where('doctor_id',$doctor->id)->paginate(5);
         }
         else{
-            $appointmentSlots=AppointmentSlot::all();
+            $appointmentSlots=AppointmentSlot::paginate(5);
         }
         return view('appointment-slots.index', compact('appointmentSlots'));
     }

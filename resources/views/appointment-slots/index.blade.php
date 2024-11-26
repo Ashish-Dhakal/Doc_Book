@@ -60,6 +60,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-6">
+                    {{ $appointmentSlots->links() }}
+                </div>
             </div>
         </div>
     </div>

@@ -13,8 +13,8 @@ class SpecialityController extends Controller
      */
     public function index()
     {
-        $data['specialities'] = Speciality::all();
-        $data['doctors'] = Doctor::all();
+        $data['specialities'] = Speciality::paginate(5);
+        // $data['doctors'] = Doctor::with('speciality')->paginate(5);
         return view('specializations.index', $data);
     }
 

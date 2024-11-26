@@ -136,6 +136,10 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <div class="mt-4">
+                        {{ $appointments->links() }}
+                    </div>
                 </div>
             </div>
         </div>

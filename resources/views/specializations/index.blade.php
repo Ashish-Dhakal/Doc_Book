@@ -52,6 +52,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-6">
+                    {{ $specialities->links() }}
+                </div>
             </div>
         </div>
     </div>

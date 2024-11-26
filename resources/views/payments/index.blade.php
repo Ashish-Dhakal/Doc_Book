@@ -7,14 +7,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Add content for the payment list here -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <!-- Check if there are any payments -->
-                    {{-- @if ($payments->isEmpty())
-                        <div class="alert alert-warning">No payments found.</div>
-                    @else --}}
-                        <!-- Payments table -->
                         <table class="table-auto w-full border-collapse">
                             <thead>
                                 <tr class="bg-gray-100 border-b">
@@ -55,6 +49,9 @@
                             </tbody>
                         </table>
                 </div>
+            </div>
+            <div class="mt-6">
+                {{ $payments->links() }}
             </div>
         </div>
     </div>

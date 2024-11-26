@@ -20,10 +20,10 @@ class PaymentController extends Controller
 
         if (Auth::user()->roles == 'patient') {
             $payments = Payment::where('patient_id', $patient->id)
-                ->with(['patient', 'appointment'])->get();
+                ->with(['patient', 'appointment'])->paginate(5);
             $data['payments'] = $payments;
         }
-        $data['payments'] = Payment::with(['patient', 'appointment'])->get();
+        $data['payments'] = Payment::with(['patient', 'appointment'])->paginate(5);
         return view('payments.index', $data);
     }
 

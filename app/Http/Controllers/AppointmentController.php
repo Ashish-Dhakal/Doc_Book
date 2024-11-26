@@ -38,13 +38,14 @@ class AppointmentController extends Controller
         // dd($specialities);
 
         if ($patient) {
-            $data['appointments'] = Appointment::where('patient_id', $patient->id)->get();
+            $data['appointments'] = Appointment::where('patient_id', $patient->id)->paginate(5);
+            
         } elseif (Auth::user()->roles == 'admin') {
-            $data['appointments'] = Appointment::all();
+            $data['appointments'] = Appointment::paginate(5);
         } elseif (Auth::user()->roles == 'doctor') {
             $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
                 ->where('status', 'booked')
-                ->get();
+                ->paginate(5);
         } else {
             return redirect()->route('login');
         }
@@ -398,6 +399,9 @@ class AppointmentController extends Controller
                 ]);
 
                 $firstReview = $appointment->reviews->first();
+                if(!$firstReview){
+                    return back()->with('error', 'Doctor is yet to add review first');
+                }
 
                 PatientHistory::create([
                     'appointment_id' => $appointment->id,

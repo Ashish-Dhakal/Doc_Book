@@ -45,6 +45,9 @@
                         </table>
                     </div>
             </div>
+            <div class="mt-6">
+                {{ $reviews->links() }}
+            </div>
         </div>
     </div>
 </x-app-layout>

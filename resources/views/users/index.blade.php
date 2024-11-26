@@ -68,8 +68,8 @@
                                                 <!-- Actions: Edit, Delete -->
                                                 <a href="{{ route('users.edit', $patient->user->id) }}"
                                                     class="text-indigo-600 hover:text-indigo-900">Edit</a> |
-                                                <form action="{{ route('users.destroy', $patient->user->id) }}" method="POST"
-                                                    class="inline-block">
+                                                <form action="{{ route('users.destroy', $patient->user->id) }}"
+                                                    method="POST" class="inline-block">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
@@ -80,6 +80,9 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="mt-4">
+                            {{ $patients->links() }}
                         </div>
                     </div>
 
@@ -105,7 +108,8 @@
                                 <tbody>
                                     @foreach ($doctors as $doctor)
                                         <tr class="hover:bg-gray-50">
-                                            <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->f_name }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->f_name }}
+                                            </td>
                                             <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->l_name }}
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-800">{{ $doctor->user->email }}</td>
@@ -120,8 +124,8 @@
                                                 <!-- Actions: Edit, Delete -->
                                                 <a href="{{ route('users.edit', $doctor->user->id) }}"
                                                     class="text-indigo-600 hover:text-indigo-900">Edit</a> |
-                                                <form action="{{ route('users.destroy', $doctor->user->id) }}" method="POST"
-                                                    class="inline-block">
+                                                <form action="{{ route('users.destroy', $doctor->user->id) }}"
+                                                    method="POST" class="inline-block">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
@@ -133,7 +137,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="mt-4">
+                            {{ $doctors->links() }}
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>

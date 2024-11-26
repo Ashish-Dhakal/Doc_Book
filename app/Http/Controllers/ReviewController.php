@@ -30,8 +30,7 @@ class ReviewController extends Controller
 
             $appointmentIds = $appointments->pluck('id'); // Get an array of appointment IDs
 
-            $reviews = Review::whereIn('appointment_id', $appointmentIds)->with('appointment')->get();
-
+            $reviews = Review::whereIn('appointment_id', $appointmentIds)->with('appointment')->paginate(5);
         } elseif ($patient) {
             $appointments = Appointment::where('patient_id', $patient->id)->get();
 
@@ -39,7 +38,7 @@ class ReviewController extends Controller
             //     dd('No appointments found for this patient.');
             // }
             $appointmentIds = $appointments->pluck('id');
-            $reviews = Review::with('appointment')->whereIn('appointment_id', $appointmentIds)->get();
+            $reviews = Review::with('appointment')->whereIn('appointment_id', $appointmentIds)->paginate(5);
 
             // dd($reviews->toArray());
         }
