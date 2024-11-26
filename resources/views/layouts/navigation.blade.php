@@ -75,6 +75,15 @@
                         </x-nav-link>
                     </div>
                 @endcanany
+
+                @canany(['doctor_access' ,'patient_access'])
+                      <!-- Navigation Links -->
+                      <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link :href="route('reviews.index')" :active="request()->routeIs('reviews.index')">
+                            {{ __('Review') }}
+                        </x-nav-link>
+                    </div>
+                @endcanany
             </div>
 
             <!-- Settings Dropdown -->

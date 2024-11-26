@@ -42,8 +42,18 @@
                                     <td class="px-6 py-3">
                                         <a href="{{ route('appointment-slots.show', $slot->id) }}"
                                             class="text-indigo-600 hover:text-indigo-800 transition duration-200">
-                                            View
-                                        </a>
+                                            View 
+                                        </a> |
+                                        {{-- delete --}}
+                                        <form action="{{ route('appointment-slots.destroy', $slot->id) }}"
+                                            method="POST" class="inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="text-red-600 hover:text-red-800 transition duration-200">
+                                                Delete
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

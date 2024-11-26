@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Doctor;
 use Carbon\Carbon;
+use App\Models\Doctor;
 use Illuminate\Http\Request;
 use App\Models\AppointmentSlot;
+use Illuminate\Support\Facades\Auth;
 
 class AppointmentSlotController extends Controller
 {
@@ -14,7 +15,14 @@ class AppointmentSlotController extends Controller
      */
     public function index()
     {
-        $appointmentSlots = AppointmentSlot::all();
+        if(Auth::user()->roles=='doctor'){
+            $userId=Auth::user()->id;
+            $doctor=Doctor::where('user_id',$userId)->first();
+            $appointmentSlots=AppointmentSlot::where('doctor_id',$doctor->id)->get();
+        }
+        else{
+            $appointmentSlots=AppointmentSlot::all();
+        }
         return view('appointment-slots.index', compact('appointmentSlots'));
     }
 

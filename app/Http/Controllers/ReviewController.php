@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Doctor;
+use App\Models\Patient;
+use App\Models\Appointment;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
@@ -13,7 +17,33 @@ class ReviewController extends Controller
      */
     public function index()
     {
-        //
+        $userId = Auth::user()->id;
+        $doctor = Doctor::where('user_id', $userId)->first();
+        $patient = Patient::where('user_id', $userId)->first();
+
+        if ($doctor) {
+            $appointments = Appointment::where('doctor_id', $doctor->id)->get();
+
+            // if ($appointments->isEmpty()) {
+            //     return response()->json(['message' => 'No appointments found for this doctor.'], 404);
+            // }
+
+            $appointmentIds = $appointments->pluck('id'); // Get an array of appointment IDs
+
+            $reviews = Review::whereIn('appointment_id', $appointmentIds)->with('appointment')->get();
+
+        } elseif ($patient) {
+            $appointments = Appointment::where('patient_id', $patient->id)->get();
+
+            // if ($appointments->isEmpty()) {
+            //     dd('No appointments found for this patient.');
+            // }
+            $appointmentIds = $appointments->pluck('id');
+            $reviews = Review::with('appointment')->whereIn('appointment_id', $appointmentIds)->get();
+
+            // dd($reviews->toArray());
+        }
+        return view('reviews.index', compact('reviews'));
     }
 
     /**
