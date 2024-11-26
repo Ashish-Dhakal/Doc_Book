@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\RoleCheckMiddleware;
 use App\Http\Controllers\DashboardController;
@@ -38,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/appointment-slots', AppointmentSlotController::class)->middleware('role:admin,doctor');
     Route::resource('/appointments', AppointmentController::class);
     Route::resource('/specializations', SpecialityController::class)->middleware('role:admin');
+    Route::resource('/payments', PaymentController::class);
 
 
     Route::post('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');

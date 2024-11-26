@@ -12,7 +12,8 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        //
+        $data['payments'] = Payment::with(['patient', 'appointment'])->get();
+        return view('payments.index', $data);
     }
 
     /**
