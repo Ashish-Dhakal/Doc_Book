@@ -58,6 +58,43 @@
                                     @enderror
                                 </div>
 
+                                 <!-- Age -->
+                                 <div>
+                                    <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                                    <input type="number" id="age" name="age" value="{{ old('age') }}"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        required>
+                                    @error('age')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Blood Group -->
+                                <div>
+                                    <label for="blood_group" class="block text-sm font-medium text-gray-700">Blood Group</label>
+                                    <input type="text" id="blood_group" name="blood_group" value="{{ old('blood_group') }}"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        required>
+                                    @error('blood_group')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Gender -->
+                                <div>
+                                    <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                                    <select id="gender" name="gender"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
+                                        <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
+                                        
+                                        
+                                    </select>
+                                    @error('gender')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
                                 <!-- Email -->
                                 <div>
                                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
@@ -150,6 +187,45 @@
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>
+
+
+                                 <!-- Age -->
+                                 <div>
+                                    <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                                    <input type="number" id="age" name="age" value="{{ old('age') }}"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        required>
+                                    @error('age')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Blood Group -->
+                                <div>
+                                    <label for="blood_group" class="block text-sm font-medium text-gray-700">Blood Group</label>
+                                    <input type="text" id="blood_group" name="blood_group" value="{{ old('blood_group') }}"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        required>
+                                    @error('blood_group')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <!-- Gender -->
+                                <div>
+                                    <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                                    <select id="gender" name="gender"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
+                                        <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
+                                        
+                                        
+                                    </select>
+                                    @error('gender')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
 
                                 <!-- Email -->
                                 <div>

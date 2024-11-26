@@ -23,6 +23,11 @@ class DatabaseSeeder extends Seeder
             'l_name' => 'Dhakal',
             'email' => 'ashish@test.com',
             'roles' => 'admin',
+            'gender' => 'male',
+            'phone' => '9861234567',
+            'address' => 'Pokhara',
+            'age' => 30,
+            'blood_group' => 'O+',
             'password' => bcrypt('password')
         ]);
 
@@ -31,6 +36,10 @@ class DatabaseSeeder extends Seeder
             'l_name' => 'Doctor',
             'email' => 'doctor@test.com',
             'roles' => 'doctor',
+            'gender' => 'male',
+            'age' => 30,
+            'phone' => '9861234567',
+            'blood_group' => 'O+',
             'password' => bcrypt('password'),
             'phone' => '1234567890',
             'address' => 'Kathmandu',
@@ -57,6 +66,10 @@ class DatabaseSeeder extends Seeder
             'l_name' => 'Patient',
             'email' => 'patient@test.com',
             'roles' => 'patient',
+            'gender' => 'male',
+            'phone' => '9861234567',
+            'blood_group' => 'O+',
+            'age' => 30,
             'password' => bcrypt('password'),
             'phone' => '1234567890',
             'address' => 'Kathmandu',

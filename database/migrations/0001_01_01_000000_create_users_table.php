@@ -19,6 +19,9 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('roles' , ['admin' , 'patient' , 'doctor'])->default('patient');
+            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->string('age')->nullable();
+            $table->string('blood_group')->nullable();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->rememberToken();

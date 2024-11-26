@@ -32,22 +32,32 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // dd($request->toArray());
+        // dd($request->all());
         $request->validate([
 
             'f_name' => ['required', 'string', 'max:255'],
             'l_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'gender' => ['required'],
+            'age' => ['required', 'numeric'],
+            'blood_group' => ['required'],
+            'address' => ['required'],
+            'phone' => ['required', 'numeric'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
-        // $role = 'patient';
 
         $user = User::create([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
             'email' => $request->email,
+            'gender' => $request->gender,
+            'age' => $request->age,
+            'blood_group' => $request->blood_group,
+            'address' => $request->address,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
+
         $user->notify(new VerifyEmail($user));
 
         Patient::create([

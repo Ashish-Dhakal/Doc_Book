@@ -31,6 +31,9 @@ class UserCreateRequest extends FormRequest
             'address' => ['required', 'string', 'max:255'],
             'password' => ['required'],
             'hourly_rate' => ['numeric'],
+            'gender' => ['required'],
+            'age' => ['required','numeric'],
+            'blood_group' => ['required'],
             'email' => [
                 'required',
                 'string',
