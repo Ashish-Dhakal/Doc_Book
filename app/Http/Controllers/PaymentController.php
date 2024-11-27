@@ -6,7 +6,9 @@ use App\Models\Patient;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Xentixar\EsewaSdk\Esewa;
+use App\Mail\PaymentCompleteMail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
@@ -116,7 +118,8 @@ class PaymentController extends Controller
 
                 // Find the payment record in the database
                 $payment = Payment::where('transaction_id', $transactionUuid)->first();
-                dd($payment);
+                // dd($payment->patient->user->email);
+                Mail::to($payment->patient->user->email)->queue(new PaymentCompleteMail($payment));
 
                 if ($payment) {
                     // Update the payment status to 'success'

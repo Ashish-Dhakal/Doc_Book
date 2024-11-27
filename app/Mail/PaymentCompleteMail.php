@@ -9,21 +9,17 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AppointmentMail extends Mailable implements ShouldQueue
+class PaymentCompleteMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
-    public $appointment;
-    public $recipientType; 
-
+    public $payment;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($appointment , $recipientType )
+    public function __construct($payment)
     {
-         $this->appointment = $appointment;
-         $this->recipientType = $recipientType; 
-
+        $this->payment = $payment;
     }
 
     /**
@@ -32,7 +28,7 @@ class AppointmentMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Appointment Created Notice',
+            subject: 'Payment Complete Mail',
         );
     }
 
@@ -42,10 +38,9 @@ class AppointmentMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.AppointmentMail',
+            view: 'emails.PaymentCompleteMail',
             with: [
-                'appointment' => $this->appointment,
-                'recipientType' => $this->recipientType,
+                'payment' => $this->payment,
             ]
         );
     }

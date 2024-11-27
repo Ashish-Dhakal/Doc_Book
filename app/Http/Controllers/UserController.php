@@ -50,7 +50,7 @@ class UserController extends Controller
             'roles' => $request->roles,
             'password' => bcrypt($request->password),
         ]);
-        // $user->notify(new VerifyEmail($user));
+        $user->notify(new VerifyEmail($user));
 
 
         if ($user->roles == 'patient') {
