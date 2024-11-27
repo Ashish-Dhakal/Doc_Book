@@ -23,24 +23,13 @@ class ReviewController extends Controller
 
         if ($doctor) {
             $appointments = Appointment::where('doctor_id', $doctor->id)->get();
+            $appointmentIds = $appointments->pluck('id'); 
 
-            // if ($appointments->isEmpty()) {
-            //     return response()->json(['message' => 'No appointments found for this doctor.'], 404);
-            // }
-
-            $appointmentIds = $appointments->pluck('id'); // Get an array of appointment IDs
-
-            $reviews = Review::whereIn('appointment_id', $appointmentIds)->with('appointment')->paginate(5);
+            $reviews = Review::with('appointment')->whereIn('appointment_id', $appointmentIds)->paginate(5);
         } elseif ($patient) {
             $appointments = Appointment::where('patient_id', $patient->id)->get();
-
-            // if ($appointments->isEmpty()) {
-            //     dd('No appointments found for this patient.');
-            // }
             $appointmentIds = $appointments->pluck('id');
             $reviews = Review::with('appointment')->whereIn('appointment_id', $appointmentIds)->paginate(5);
-
-            // dd($reviews->toArray());
         }
         return view('reviews.index', compact('reviews'));
     }

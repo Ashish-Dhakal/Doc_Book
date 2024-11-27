@@ -23,7 +23,10 @@ class PaymentController extends Controller
                 ->with(['patient', 'appointment'])->paginate(5);
             $data['payments'] = $payments;
         }
-        $data['payments'] = Payment::with(['patient', 'appointment'])->paginate(5);
+        if(Auth::user()->roles == 'admin'){
+
+            $data['payments'] = Payment::with(['patient', 'appointment'])->paginate(5);
+        }
         return view('payments.index', $data);
     }
 
@@ -113,6 +116,7 @@ class PaymentController extends Controller
 
                 // Find the payment record in the database
                 $payment = Payment::where('transaction_id', $transactionUuid)->first();
+                dd($payment);
 
                 if ($payment) {
                     // Update the payment status to 'success'
@@ -136,7 +140,8 @@ class PaymentController extends Controller
 
     public function failure(Request $request)
     {
+        dd($request);
         // Handle payment failure
-        return redirect()->route('payments.index')->with('error', 'Payment failed!');
+        return redirect()->route('payments.index')->with('error', 'Payment from failure failed!');
     }
 }

@@ -44,8 +44,7 @@ class AppointmentController extends Controller
             $data['appointments'] = Appointment::paginate(5);
         } elseif (Auth::user()->roles == 'doctor') {
             $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
-                ->where('status', 'booked')
-                ->paginate(5);
+                ->where('status', 'booked')->get();
         } else {
             return redirect()->route('login');
         }
