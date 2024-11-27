@@ -68,7 +68,7 @@
                                 <i class="bi bi-speedometer2 me-2"></i>
                                 Admin Dashboard
                             </h3>
-                            <a href="{{route('users.index')}}"  class="btn btn-primary">Add New User</a>
+                            <a href="{{ route('users.index') }}" class="btn btn-primary">Add New User</a>
                         </div>
 
                         <!-- Statistics Cards -->
@@ -114,6 +114,148 @@
                             </div>
                         </div>
 
+
+                        <!-- Appointment Chart -->
+                        <div class="container">
+                            <div class="card mt-5">
+                                <h3 class="card-header p-3">DocBook Appointment Chart</h3>
+                                <div class="card-body">
+                                    <canvas id="myChart" height="120px"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <script type="text/javascript">
+                            var labels1 = @json($labels1);
+                            var users1 = @json($data1);
+
+
+                            const chartData = {
+                                labels: labels1,
+                                datasets: [{
+                                    label: 'Appointments per Month',
+                                    backgroundColor: 'rgb(255, 99, 132)',
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    data: users1,
+                                }]
+                            };
+
+                            // Chart configuration
+                            const config = {
+                                type: 'line',
+                                data: chartData,
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: true,
+                                    scales: {
+                                        x: {
+                                            beginAtZero: true
+                                        },
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            };
+
+                            // Create the chart
+                            const myChart = new Chart(
+                                document.getElementById('myChart'),
+                                config
+                            );
+                        </script>
+
+                        <div class="card-body p-4">
+                            <h3 class="h4 text-secondary mb-4">Charts</h3>
+
+                            <!-- Flex container for side-by-side charts -->
+                            <div class="flex justify-between gap-4">
+
+                                <!-- Gender Distribution Chart -->
+                                <div class="w-1/3"> <!-- Smaller width for Gender Chart -->
+                                    <h4 class="h5 text-secondary mb-3">Gender Distribution</h4>
+                                    <canvas id="genderChart" width="400" height="400"></canvas>
+                                </div>
+
+                                <!-- Specialty Distribution Chart -->
+                                <div class="w-2/3"> <!-- Larger width for Specialty Chart -->
+                                    <h4 class="h5 text-secondary mb-3">Specialty Distribution</h4>
+                                    <canvas id="specialtyChart" width="600" height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            // Gender Distribution Chart
+                            const genderData = @json($gender_distribution);
+                            const genderLabels = genderData.map(g => g.gender);
+                            const genderCounts = genderData.map(g => g.count);
+
+                            new Chart(document.getElementById('genderChart'), {
+                                type: 'doughnut',
+                                data: {
+                                    labels: genderLabels,
+                                    datasets: [{
+                                        data: genderCounts,
+                                        backgroundColor: ['#4CAF50', '#FFC107'], // Colors for Male and Female
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: 'top',
+                                        }
+                                    }
+                                }
+                            });
+
+                            // Specialty Distribution Chart
+                            const specialtyLabels = @json($chartData['labels']); // Specialty names
+                            const specialtyCounts = @json($chartData['data']); // Counts
+
+                            new Chart(document.getElementById('specialtyChart'), {
+                                type: 'bar',
+                                data: {
+                                    labels: specialtyLabels,
+                                    datasets: [{
+                                        label: 'Number of Doctors',
+                                        data: specialtyCounts,
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Bar color
+                                        borderColor: 'rgba(75, 192, 192, 1)', // Border color
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top'
+                                        }
+                                    }
+                                }
+                            });
+                        </script>
+
+
+
+
+
+
+
+
+
+
+
+
                         <!-- Doctor List -->
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-white p-4 border-0">
@@ -139,7 +281,6 @@
                                                 <th class="px-4">Doctor Name</th>
                                                 <th>Speciality</th>
                                                 <th>Appointment Slots</th>
-                                                <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody id="doctorList">
@@ -166,25 +307,16 @@
                                                             <div class="mb-1 small">
                                                                 <span class="text-muted">{{ $slot->date }}</span> |
                                                                 <span class="fw-medium">
-                                                                    {{ \Carbon\Carbon::parse( $slot->start_time )->format('g:i A') }}
+                                                                    {{ \Carbon\Carbon::parse($slot->start_time)->format('g:i A') }}
                                                                     -
-                                                                    {{ \Carbon\Carbon::parse( $slot->end_time )->format('g:i A') }}> |
-                                                                <span
-                                                                    class="badge bg-{{ $slot->status === 'available' ? 'success' : 'danger' }}">
-                                                                    {{ $slot->status }}
-                                                                </span>
+                                                                    {{ \Carbon\Carbon::parse($slot->end_time)->format('g:i A') }}>
+                                                                    |
+                                                                    <span
+                                                                        class="badge bg-{{ $slot->status === 'available' ? 'success' : 'danger' }}">
+                                                                        {{ $slot->status }}
+                                                                    </span>
                                                             </div>
                                                         @endforeach
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            <button class="btn btn-sm btn-outline-primary">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </button>
-                                                            <button class="btn btn-sm btn-outline-danger">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </div>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -225,8 +357,9 @@
                                                             </div>
                                                             <div class="small text-muted">
                                                                 <i class="bi bi-clock me-1"></i>
-                                                                {{ \Carbon\Carbon::parse( $appointment->start_time )->format('g:i A') }} -
-                                                                {{ \Carbon\Carbon::parse( $appointment->end_time )->format('g:i A') }}
+                                                                {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
+                                                                -
+                                                                {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -275,7 +408,7 @@
                                                             </div>
                                                             <div class="small text-muted">
                                                                 <i class="bi bi-clock me-1"></i>
-                                                                {{ \Carbon\Carbon::parse( $appointment->start_time )->format('g:i A') }}
+                                                                {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
                                                             </div>
                                                         </div>
                                                         <div class="col-md-2">
@@ -386,7 +519,7 @@
                             <i class="bi bi-hospital fs-3 me-3"></i>
                             <h3 class="m-0 fw-bold">Patient Dashboard</h3>
                         </div>
-                        <a href="{{route('appointments.index')}}" class="btn btn-light btn-lg">New Appointment</a>
+                        <a href="{{ route('appointments.index') }}" class="btn btn-light btn-lg">New Appointment</a>
                     </div>
 
                     <div class="card-body p-4">
@@ -444,11 +577,10 @@
                                                                             <div class="d-flex align-items-center mb-2">
                                                                                 <i
                                                                                     class="bi bi-clock text-primary me-2"></i>
-                                                                                <small
-                                                                                    class="text-dark">
-                                                                                    {{ \Carbon\Carbon::parse( $slot->start_time )->format('g:i A') }}
+                                                                                <small class="text-dark">
+                                                                                    {{ \Carbon\Carbon::parse($slot->start_time)->format('g:i A') }}
                                                                                     -
-                                                                                    {{ \Carbon\Carbon::parse( $slot->end_time )->format('g:i A') }}</small>
+                                                                                    {{ \Carbon\Carbon::parse($slot->end_time)->format('g:i A') }}</small>
                                                                             </div>
                                                                             <div class="d-flex align-items-center">
                                                                                 <i class="bi bi-circle-fill text-{{ $slot->status === 'available' ? 'success' : 'danger' }} me-2"
@@ -502,8 +634,9 @@
                                                         </p>
                                                         <p class="mb-1 small">
                                                             <i class="bi bi-clock text-success me-2"></i>
-                                                            {{ \Carbon\Carbon::parse( $appointment->start_time )->format('g:i A') }} - 
-                                                            {{ \Carbon\Carbon::parse( $appointment->end_time )->format('g:i A') }}
+                                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
+                                                            -
+                                                            {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}
                                                         </p>
                                                         @if ($appointment->review)
                                                             <div class="bg-light rounded p-2 mt-2">
@@ -554,8 +687,9 @@
                                                         </p>
                                                         <p class="mb-1 small">
                                                             <i class="bi bi-clock text-primary me-2"></i>
-                                                            {{ \Carbon\Carbon::parse($appointment->start_time   )->format('g:i A') }} - 
-                                                            {{ \Carbon\Carbon::parse($appointment->end_time  )->format('g:i A') }}
+                                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
+                                                            -
+                                                            {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}
                                                         </p>
                                                         @if ($appointment->review)
                                                             <div class="bg-light rounded p-2 mt-2">
@@ -606,8 +740,9 @@
                                                         </p>
                                                         <p class="mb-1 small">
                                                             <i class="bi bi-clock text-danger me-2"></i>
-                                                            {{ \Carbon\Carbon::parse($appointment->start_time   )->format('g:i A') }} - 
-                                                            {{ \Carbon\Carbon::parse($appointment->end_time  )->format('g:i A') }}
+                                                            {{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }}
+                                                            -
+                                                            {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}
                                                         </p>
                                                         @if ($appointment->review)
                                                             <div class="bg-light rounded p-2 mt-2">
