@@ -27,7 +27,7 @@ class UserUpdateRequest extends FormRequest
         return [
             'f_name' => ['required', 'string', 'max:255'],
             'l_name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string'],
+            'phone' => ['required', 'numeric'],
             'address' => ['required', 'string', 'max:255'],
             'gender' => ['required'],
             'age' => ['required' , 'numeric'],

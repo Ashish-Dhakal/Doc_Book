@@ -20,14 +20,13 @@ Route::prefix('V1')->group(function () {
         // Auth Routes
         Route::post('logout', [App\Http\Controllers\Api\V1\Auth\AuthController::class, 'logout']);
 
-        Route::apiResource('/users', UserController::class)->names([
-            'index' => 'api.users.index',
-            'store' => 'api.users.store',
-            'show' => 'api.users.show',
-            'update' => 'api.users.update',
-            'destroy' => 'api.users.destroy',
-        ]);
+        //route name() prefix
 
+
+        Route::name('api.')->group(function () {
+            Route::apiResources([
+                'users' => UserController::class,
+            ]);
+        });
     });
-
 });
