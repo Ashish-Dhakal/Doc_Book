@@ -25,13 +25,6 @@ class UserController extends BaseController
         $data['doctors'] = Doctor::all();
 
         return $this->successResponse($data ,'patient and doctor list');
-
-        // return response()->json([
-        //     'success' => true,
-        //     'patietns' => $data['patients'],
-        //     'doctors' => $data['doctors'],
-        //     'message' => 'patient and doctor list'
-        // ],200);
     }
 
     /**
@@ -53,11 +46,7 @@ class UserController extends BaseController
         ]);
 
         if ($validateUser->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $validateUser->errors()->all(),
-            ]);
+            return $this->errorResponse('Validation failed', $validateUser->errors()->all());
         }
 
         $user = User::create([
@@ -75,11 +64,26 @@ class UserController extends BaseController
 
         // $user->notify(new VerifyEmail($user));
 
-        Patient::create([
-            'user_id' => $user->id,
-        ]);
+        $userRole = $user->roles;
 
-        return $this->successResponse($user ,'User created successfully');
+        switch ($userRole) {
+            case 'patient':
+                Patient::create([
+                    'user_id' => $user->id,
+                ]);
+                return $this->successResponse($user ,'Patient created successfully');
+                break;
+            case 'doctor':
+                Doctor::create([
+                    'user_id' => $user->id,
+                    'speciality_id' => $request->speciality_id,
+                    'hourly_rate' => $request->hourly_rate
+                ]);
+                return $this->successResponse($user ,'Patient created successfully');
+                break;
+            default:
+                break;
+        }
     }
 
     /**

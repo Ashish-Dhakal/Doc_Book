@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\SpecialityController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,7 @@ Route::prefix('V1')->group(function () {
         Route::name('api.')->group(function () {
             Route::apiResources([
                 'users' => UserController::class,
+                'specializations' => SpecialityController::class,
             ]);
         });
     });
