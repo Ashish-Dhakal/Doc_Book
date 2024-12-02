@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AppointmentSlotController;
-use App\Http\Controllers\Api\V1\SpecialityController;
-use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\SpecialityController;
+use App\Http\Controllers\Api\V1\AppointmentController;
+use App\Http\Controllers\Api\V1\AppointmentSlotController;
 
 
 
@@ -17,7 +18,7 @@ Route::prefix('V1')->group(function () {
     Route::post('login', [App\Http\Controllers\Api\V1\Auth\AuthController::class, 'login']);
 
     // Protected Routes 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum' , 'throttle:60,1')->group(function () {
 
         // Auth Routes
         Route::post('logout', [App\Http\Controllers\Api\V1\Auth\AuthController::class, 'logout']);
@@ -36,6 +37,9 @@ Route::prefix('V1')->group(function () {
             Route::middleware('role:admin,doctor')->group(function () {
                 Route::apiResource('appountmentSlots',AppointmentSlotController::class);
             });
+
+            Route::apiResource('appointments', AppointmentController::class);
+            Route::post('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
 
 
         });
