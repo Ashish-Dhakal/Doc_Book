@@ -16,11 +16,10 @@ class BaseController extends Controller
         ], 200);
     }
 
-    public function errorResponse($error , $errorMessage, $code = 404){
+    public function errorResponse($error , $code = 404){
         return response()->json([
             'success' => false,
             'message' => $error,
-            'reason' => $errorMessage,
         ], $code);
     }
 

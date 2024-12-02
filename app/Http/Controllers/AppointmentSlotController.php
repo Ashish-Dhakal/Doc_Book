@@ -15,12 +15,11 @@ class AppointmentSlotController extends Controller
      */
     public function index()
     {
-        if(Auth::user()->roles=='doctor'){
-            $userId=Auth::user()->id;
-            $doctor=Doctor::where('user_id',$userId)->first();
-            $appointmentSlots=AppointmentSlot::where('doctor_id',$doctor->id)->paginate(5);
-        }
-        else{
+        if (Auth::user()->roles == 'doctor') {
+            $userId = Auth::user()->id;
+            $doctor = Doctor::where('user_id', $userId)->first();
+            $appointmentSlots = AppointmentSlot::where('doctor_id', $doctor->id)->paginate(5);
+        } else {
             $appointmentSlots=AppointmentSlot::paginate(5);
         }
         return view('appointment-slots.index', compact('appointmentSlots'));
@@ -40,6 +39,7 @@ class AppointmentSlotController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'doctor_id' => 'required',
             'date' => 'required',
@@ -62,7 +62,28 @@ class AppointmentSlotController extends Controller
             // If end time is earlier than start time, return an error response
             // return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
             return redirect()->back()->with('error', 'End time should be after start time.');
+        }
 
+        $conflictingSchedule = AppointmentSlot::where('doctor_id', $request->input('doctor_id'))
+            ->whereDate('date', $request->input('date')) // Check for the same date
+            ->where(function ($query) use ($startTime, $endTime) {
+                // Check for overlaps:
+                $query->whereBetween('start_time', [$startTime, $endTime])  // Existing start_time within the new time range
+                    ->orWhereBetween('end_time', [$startTime, $endTime])    // Existing end_time within the new time range
+                    ->orWhere(function ($query) use ($startTime, $endTime) {
+                        // Full overlap: Existing schedule fully covers the new time range
+                        $query->where('start_time', '<', $startTime)
+                            ->where('end_time', '>', $endTime);
+                    });
+            })
+            ->exists(); // Check if any conflict exists
+
+        // If there's a conflict, return error response
+        if ($conflictingSchedule) {
+            // return response()->json([
+            //     'error' => 'The requested time slot conflicts with an existing schedule for this doctor.',
+            // ], 400); // Return a 400 Bad Request response with an error message
+            return redirect()->back()->with('error', 'The requested time slot conflicts with an existing schedule for this doctor.');
         }
 
         $appointmentSlot = new AppointmentSlot();
@@ -74,7 +95,6 @@ class AppointmentSlotController extends Controller
         $appointmentSlot->save();
         // return redirect()->route('appointment-slots.index')->with('success', 'Appointment Slot created successfully');
         return redirect()->route('appointment-slots.index')->with('success', 'Appointment Slot created successfully.');
-
     }
 
     /**
