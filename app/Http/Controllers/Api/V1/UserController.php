@@ -21,8 +21,8 @@ class UserController extends BaseController
      */
     public function index()
     {
-        $data['patients'] = Patient::all();
-        $data['doctors'] = Doctor::all();
+        $data['patients'] = Patient::with('user')->get();
+        $data['doctors'] = Doctor::with('user')->get();
 
         return $this->successResponse($data ,'patient and doctor list');
     }

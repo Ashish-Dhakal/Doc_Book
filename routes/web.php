@@ -51,13 +51,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
 
 
-    Route::get('/payment/{id}/pay', [PaymentController::class, 'pay'])->name('payment.pay');
-    Route::post('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-    Route::post('/payment/failure', [PaymentController::class, 'failure'])->name('payment.failure');
-
+    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/payment/failure', [PaymentController::class, 'failure'])->name('payment.failure');
+    
     // Route::match(['get', 'post'], '/payment/success', [PaymentController::class, 'success'])->name('payment.success');
     // Route::match(['get', 'post'], '/payment/failure', [PaymentController::class, 'failure'])->name('payment.failure');
 });
+Route::get('/payment/{id}/pay', [PaymentController::class, 'pay'])->name('payment.pay');
 Route::get('emailVerify/{id}', [RegisteredUserController::class, 'emailVerify'])->name('emailVerify');
 
 require __DIR__ . '/auth.php';

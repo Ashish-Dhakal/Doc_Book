@@ -109,8 +109,9 @@ class AppointmentController extends BaseController
                             ->where('end_time', '>=', $endTime);
                     });
             })
-            ->where('status', ['pending', 'booked'])
+            ->whereIn('status', ['pending', 'booked'])
             ->exists();
+
 
         if ($conflict) {
 
@@ -122,17 +123,18 @@ class AppointmentController extends BaseController
             ->where('date', $date)
             ->where(function ($query) use ($startTime, $endTime) {
                 $query->where(function ($subQuery) use ($startTime, $endTime) {
-                    $subQuery->where('status', ['unavailable', 'booked'])
+                    // Check if the time slot is either booked or unavailable
+                    $subQuery->whereIn('status', ['unavailable', 'booked'])
                         ->where(function ($timeQuery) use ($startTime, $endTime) {
-
+                            // Check for overlapping times
                             $timeQuery->where('start_time', '<', $endTime)
                                 ->where('end_time', '>', $startTime);
                         });
                 });
             })
-            ->first();
+            ->exists(); 
         if ($appointmentSlots) {
-            return $this->errorResponse('Doctor is not available at that time.');
+            return $this->errorResponse('Doctor is not available at that time slot.');
         }
 
 
@@ -204,7 +206,7 @@ class AppointmentController extends BaseController
 
             return $this->successResponse($appointment, 'Appointment created successfully');
         } else {
-        
+
             return $this->errorResponse('You are not authorized to create an appointment.');
         }
     }
@@ -234,11 +236,11 @@ class AppointmentController extends BaseController
      */
     public function update(Request $request, Appointment $appointment)
     {
-        if ($appointment->status == 'completed'||$appointment->status == 'booked') {
-            return $this->errorResponse('This appointment is already completed or booked and cannot be modified.' , 422);
+        if ($appointment->status == 'completed' || $appointment->status == 'booked') {
+            return $this->errorResponse('This appointment is already completed or booked and cannot be modified.', 422);
         }
 
-        if( !$this->authorize('edit', $appointment)){
+        if (!$this->authorize('edit', $appointment)) {
             return $this->errorResponse('You are not authorized to update this appointment.');
         }
 
