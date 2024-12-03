@@ -204,7 +204,8 @@ class AppointmentController extends BaseController
 
             return $this->successResponse($appointment, 'Appointment created successfully');
         } else {
-            abort(403);
+        
+            return $this->errorResponse('You are not authorized to create an appointment.');
         }
     }
 
@@ -218,7 +219,7 @@ class AppointmentController extends BaseController
             ->with('patient.user:id,f_name,l_name')->with('doctor.user:id,f_name,l_name')->find($id);
 
         if (!$appointment) {
-            abort(404);
+            return $this->errorResponse('Appointment not found');
         }
 
         // Authorize the specific appointment instance
@@ -233,6 +234,14 @@ class AppointmentController extends BaseController
      */
     public function update(Request $request, Appointment $appointment)
     {
+        if ($appointment->status == 'completed'||$appointment->status == 'booked') {
+            return $this->errorResponse('This appointment is already completed or booked and cannot be modified.' , 422);
+        }
+
+        if( !$this->authorize('edit', $appointment)){
+            return $this->errorResponse('You are not authorized to update this appointment.');
+        }
+
         // Validate the incoming request
         $validateAppointment = Validator::make($request->all(), [
             'doctor_id' => ['required'],
