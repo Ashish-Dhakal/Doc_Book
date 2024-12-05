@@ -17,7 +17,7 @@ use App\Http\Controllers\Api\V1\BaseController;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
 
-
+use function PHPUnit\Framework\isEmpty;
 
 class AppointmentController extends BaseController
 {
@@ -32,17 +32,45 @@ class AppointmentController extends BaseController
 
         $userId = Auth::user()->id;
         $patient = Patient::where('user_id', $userId)->first();
-        $doctorId = Doctor::where('user_id', $userId)->first();
-        $data['specialities'] = Speciality::all();
-        // dd($specialities);
+        $doctorId = Doctor::where('user_id', $userId)->with('speciality')->first();
+        // $data['specialities'] = Speciality::all();
 
         if ($patient) {
-            $data['appointments'] = Appointment::where('patient_id', $patient->id)->paginate(5);
+            $data['appointments'] = Appointment::where('patient_id', $patient->id)->paginate(5)
+                ->map(function ($appointment) {
+                    return [
+                        'id' => $appointment->id,
+                        'date' => $appointment->date,
+                        'start_time' => $appointment->start_time,
+                        'end_time' => $appointment->end_time,
+                        'status' => $appointment->status,
+                        'doctor_id' => $appointment->doctor_id,
+                        'doctor_fname' => $appointment->doctor->user->f_name,
+                        'doctor_lname' => $appointment->doctor->user->l_name,
+                        'doctor_speciality' => $appointment->doctor->speciality->name,
+                        'hourly_rate' => $appointment->doctor->hourly_rate,
+                        'patient_id' => $appointment->patient_id,
+                        'patient_fname' => $appointment->patient->user->f_name,
+                        'patient_lname' => $appointment->patient->user->l_name,
+                        'patient_email' => $appointment->patient->user->email,
+                    ];
+                });
+
+            if ($data['appointments']->isEmpty()) {
+                return $this->errorResponse('No appointments found for this patient.');
+            }
         } elseif (Auth::user()->roles == 'admin') {
             $data['appointments'] = Appointment::paginate(5);
+            if ($data['appointments']->isEmpty()) {
+                return $this->errorResponse('No appointments found in the system.');
+            }
         } elseif (Auth::user()->roles == 'doctor') {
             $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
                 ->where('status', 'booked')->get();
+
+            if ($data['appointments']->isEmpty()) {
+                return $this->errorResponse('No appointments found for this docotr.');
+            }
         } else {
             return redirect()->route('login');
         }
