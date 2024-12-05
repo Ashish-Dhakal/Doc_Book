@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 class ReviewController extends BaseController
 {
     /**
-     * Display a listing of the resource.
+     * Fetch all reviews
      */
     public function index()
     {
@@ -39,77 +39,78 @@ class ReviewController extends BaseController
 
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
 
-        // Validate the request
-        $validateReview = Validator::make($request->all(), [
-            'appointment_id' => 'required|exists:appointments,id',
-            'comment' => 'required|string|max:1000',
-            'pdf' => 'nullable|mimes:pdf|max:10240',
-        ]);
+    // /**
+    //  * Create a new review
+    //  */
+    // public function store(Request $request)
+    // {
 
-        if ($validateReview->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validateReview->errors()->all(),
-            ], 422); // 422 is commonly used for validation errors
-        }
+    //     // Validate the request
+    //     $validateReview = Validator::make($request->all(), [
+    //         'appointment_id' => 'required|exists:appointments,id',
+    //         'comment' => 'required|string|max:1000',
+    //         'pdf' => 'nullable|mimes:pdf|max:10240',
+    //     ]);
 
-        // Handle PDF upload if it exists
-        $pdfPath = null;
-        if ($request->hasFile('pdf')) {
-            if ($request->file('pdf')->isValid()) {
-                $pdfPath = $request->file('pdf')->store('reviews/pdfs', 'public');
-            } else {
-                return $this->errorResponse('The uploaded file is invalid.');
-            }
-        }
+    //     if ($validateReview->fails()) {
+    //         return response()->json([
+    //             'message' => 'Validation failed',
+    //             'errors' => $validateReview->errors()->all(),
+    //         ], 422); // 422 is commonly used for validation errors
+    //     }
 
-        // Create a new review and associate it with the appointment
-        try {
-            $review = new Review();
-            $review->appointment_id = $request->appointment_id;
-            $review->comment = $request->comment;
-            if ($pdfPath) {
-                $review->pdf = $pdfPath;
-            }
-            $review->save();
+    //     // Handle PDF upload if it exists
+    //     $pdfPath = null;
+    //     if ($request->hasFile('pdf')) {
+    //         if ($request->file('pdf')->isValid()) {
+    //             $pdfPath = $request->file('pdf')->store('reviews/pdfs', 'public');
+    //         } else {
+    //             return $this->errorResponse('The uploaded file is invalid.');
+    //         }
+    //     }
+
+    //     // Create a new review and associate it with the appointment
+    //     try {
+    //         $review = new Review();
+    //         $review->appointment_id = $request->appointment_id;
+    //         $review->comment = $request->comment;
+    //         if ($pdfPath) {
+    //             $review->pdf = $pdfPath;
+    //         }
+    //         $review->save();
 
      
 
-            return $this->successResponse($review, 'Review submitted successfully.');
+    //         return $this->successResponse($review, 'Review submitted successfully.');
 
-        } catch (\Exception $e) {
+    //     } catch (\Exception $e) {
   
-            return $this->errorResponse('Failed to save review. Please try again.');
-        }
-    }
+    //         return $this->errorResponse('Failed to save review. Please try again.');
+    //     }
+    // }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+    // /**
+    //  * Display the specified resource.
+    //  */
+    // public function show(string $id)
+    // {
+    //     //
+    // }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+    // /**
+    //  * Update review
+    //  */
+    // public function update(Request $request, string $id)
+    // {
+    //     //
+    // }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+    // /**
+    //  * Delete review
+    //  */
+    // public function destroy(string $id)
+    // {
+    //     //
+    // }
 }

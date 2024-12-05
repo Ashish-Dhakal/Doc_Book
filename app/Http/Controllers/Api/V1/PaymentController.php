@@ -15,6 +15,9 @@ use App\Http\Controllers\Api\V1\BaseController;
 class PaymentController extends BaseController
 {
 
+    /**
+     * Fetch all Payments
+    */
     public function index()
     {
         $userId = Auth::user()->id;
@@ -32,6 +35,10 @@ class PaymentController extends BaseController
 
         return $this->successResponse($data, 'Payments retrieved successfully');
     }
+
+    /**
+     * Make payment
+    */
     public function pay(Request $request, $paymentId)
     {
         // Fetch the payment details from the database
@@ -53,7 +60,9 @@ class PaymentController extends BaseController
 
         return $esewa->init();
     }
-
+    /**
+     * Handle payment success
+    */
 
     public function success(Request $request)
     {
@@ -90,6 +99,9 @@ class PaymentController extends BaseController
     }
 
 
+    /**
+     * Handle payment failure
+    */
 
     public function failure(Request $request)
     {

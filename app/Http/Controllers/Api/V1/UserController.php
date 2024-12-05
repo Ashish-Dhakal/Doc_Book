@@ -17,18 +17,57 @@ class UserController extends BaseController
 {
 
     /**
-     * Display a listing of the resource.
+     * Fetch all users
      */
     public function index()
     {
-        $data['patients'] = Patient::with('user')->get();
-        $data['doctors'] = Doctor::with('user')->get();
+        // $data['patients'] = Patient::with('user:id,f_name,l_name,email') // Select only specific user fields
+        $data['patients'] = Patient::with('user') // Select only specific user fields
+            ->get()
+            ->map(function ($patient) {
+                return [
+                    'id' => $patient->id,
+                    'user' => [
+                        'id' => $patient->user->id,
+                        'f_name' => $patient->user->f_name,
+                        'l_name' => $patient->user->l_name,
+                        'email' => $patient->user->email,
+                        'blood_group' => $patient->user->blood_group,
+                        'gender' => $patient->user->gender,
+                        'age' => $patient->user->age,
+                        'phone' => $patient->user->phone,
+                        'address' => $patient->user->address,
+                        'roles' => $patient->user->roles
+                    ],
+                ];
+            });
 
-        return $this->successResponse($data ,'patient and doctor list');
+
+        $data['doctors'] = Doctor::with('user')->get()
+            ->map(function ($doctor) {
+                return [
+                    'id' => $doctor->id,
+                    'user' => [
+                        'id' => $doctor->user->id,
+                        'f_name' => $doctor->user->f_name,
+                        'l_name' => $doctor->user->l_name,
+                        'hourly_rate' => $doctor->hourly_rate,
+                        'email' => $doctor->user->email,
+                        'blood_group' => $doctor->user->blood_group,
+                        'gender' => $doctor->user->gender,
+                        'age' => $doctor->user->age,
+                        'phone' => $doctor->user->phone,
+                        'address' => $doctor->user->address,
+                        'roles' => $doctor->user->roles
+                    ],
+                ];
+            });
+
+        return $this->successResponse($data, 'patient and doctor list');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new user
      */
     public function store(Request $request)
     {
@@ -71,7 +110,7 @@ class UserController extends BaseController
                 Patient::create([
                     'user_id' => $user->id,
                 ]);
-                return $this->successResponse($user ,'Patient created successfully');
+                return $this->successResponse($user, 'Patient created successfully');
                 break;
             case 'doctor':
                 Doctor::create([
@@ -79,7 +118,7 @@ class UserController extends BaseController
                     'speciality_id' => $request->speciality_id,
                     'hourly_rate' => $request->hourly_rate
                 ]);
-                return $this->successResponse($user ,'Patient created successfully');
+                return $this->successResponse($user, 'Patient created successfully');
                 break;
             default:
                 break;
@@ -87,21 +126,33 @@ class UserController extends BaseController
     }
 
     /**
-     * Display the specified resource.
+     * Display the user
      */
     public function show(string $id)
     {
         try {
             $user = User::findOrFail($id);
+            $user_data = [
+                'id' => $user->id,
+                'f_name' => $user->f_name,
+                'l_name' => $user->l_name,
+                'email' => $user->email,
+                'roles' => $user->roles,
+                'gender' => $user->gender,
+                'age' => $user->age,
+                'blood_group' => $user->blood_group,
+                'phone' => $user->phone,
+                'address' => $user->address,
+            ];
+            if ($user->roles === 'doctor') {
+                $doctor = Doctor::where('user_id', $user->id)->with('speciality')->first();
+                if ($doctor) {
+                    $user_data['speciality_name'] = $doctor->speciality->name ?? 'Not Available';
+                    $user_data['hourly_rate'] = $doctor->hourly_rate ?? 'Not Available';
+                }
+            }
         
-            return response()->json([
-                'status' => true,
-                'message' => 'User details',
-                'user_detail' => $user
-            ], 200);
-
-            return $this->successResponse($user ,'User details');
-
+            return $this->successResponse($user_data, 'User details');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 
             return response()->json([
@@ -109,17 +160,16 @@ class UserController extends BaseController
                 'message' => 'No user found of that id'
             ], 404);
         }
-        
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update user
      */
-    public function update(Request $request, string $id):JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
         $user = User::find($id);
 
-           $validateUser = Validator::make($request->all(), [
+        $validateUser = Validator::make($request->all(), [
             'f_name' => ['required', 'string', 'max:255'],
             'l_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $id],
@@ -195,7 +245,7 @@ class UserController extends BaseController
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete the user
      */
     public function destroy(string $id)
     {

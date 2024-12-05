@@ -15,19 +15,49 @@ use function Pest\Laravel\json;
 class AppointmentSlotController extends BaseController
 {
     /**
-     * Display a listing of the resource.
+     * Fetch all appointment slots
      */
     public function index()
     {
         if (Auth::user()->roles == 'doctor') {
             $userId = Auth::user()->id;
             $doctor = Doctor::where('user_id', $userId)->first();
-            $data['appointmentSlots'] = AppointmentSlot::with('doctor')
-                ->where('doctor_id', $doctor->id);
-            // ->paginate(5);
+
+            if (!$doctor) {
+                return $this->errorResponse('Doctor not found', 404);
+            }
+
+            // Fetch appointment slots for the doctor
+            $appointmentSlots = AppointmentSlot::with('doctor.user')
+                ->where('doctor_id', $doctor->id)
+                ->get(); // Fetch the data to get a collection
+
+            // Transform the data using map
+            $data['appointmentSlots'] = $appointmentSlots->map(function ($slot) {
+                return [
+                    'id' => $slot->id,
+                    'date' => $slot->date,
+                    'start_time' => $slot->start_time,
+                    'end_time' => $slot->end_time,
+                    'status' => $slot->status,
+                ];
+            });
+
             return $this->successResponse($data, 'Appointment Slots retrieved successfully');
         } else {
-            $data['appointmentSlots'] = AppointmentSlot::get();
+            $appointmentSlots = AppointmentSlot::with('doctor.user')->get();
+            $data['appointmentSlots'] = $appointmentSlots->map(function ($slot) {
+                return [
+                    'id' => $slot->id,
+                    'doctor_id' => $slot->doctor_id,
+                    'doctor_name' => $slot->doctor->user->f_name . ' ' . $slot->doctor->user->l_name,
+                    'date' => $slot->date,
+                    'start_time' => $slot->start_time,
+                    'end_time' => $slot->end_time,
+                    'status' => $slot->status,
+                ];
+            });
+
             if ($data['appointmentSlots']->isEmpty()) {
                 return $this->errorResponse('No appointment slots found', ' no appointment slots found', 404);
             }
@@ -36,7 +66,7 @@ class AppointmentSlotController extends BaseController
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new appointment slot
      */
     public function store(Request $request)
     {
@@ -100,19 +130,29 @@ class AppointmentSlotController extends BaseController
 
 
     /**
-     * Display the specified resource.
+     * Display appointment slot.
      */
     public function show(string $id)
     {
         $appointmentSlot = AppointmentSlot::find($id);
+        $slot_data = [
+            'id' => $appointmentSlot->id,
+            'doctor_id' => $appointmentSlot->doctor_id,
+            'doctor f_name' => $appointmentSlot->doctor->user->f_name,
+            'doctor l_name' => $appointmentSlot->doctor->user->l_name,
+            'date' => $appointmentSlot->date,
+            'start_time' => $appointmentSlot->start_time,
+            'end_time' => $appointmentSlot->end_time,
+            'status' => $appointmentSlot->status,
+            ]; 
         if (!$appointmentSlot) {
             return $this->errorResponse('Appointment Slot not found', 404);
         }
-        return $this->successResponse($appointmentSlot, 'Appointment Slot retrieved successfully');
+        return $this->successResponse($slot_data, 'Appointment Slot retrieved successfully');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update appointment slot
      */
     public function update(Request $request, string $id)
     {
@@ -154,7 +194,7 @@ class AppointmentSlotController extends BaseController
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete appointment slot
      */
     public function destroy(string $id)
     {

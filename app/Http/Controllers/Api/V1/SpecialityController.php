@@ -13,17 +13,23 @@ use App\Http\Controllers\Api\V1\BaseController;
 class SpecialityController extends BaseController
 {
     /**
-     * Display a listing of the resource.
+     * Fetch all specialities
      */
     public function index()
     {
-        $data['specialities'] = Speciality::all();
+        $data['specialities'] = Speciality::all()
+            ->map(function ($speciality) {
+                return [
+                    'id' => $speciality->id,
+                    'name' => $speciality->name,
+                ];
+            });
 
         return $this->successResponse($data, 'speciality list');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new speciality
      */
     public function store(Request $request)
     {
@@ -48,14 +54,31 @@ class SpecialityController extends BaseController
      */
     public function show(string $id)
     {
-        // $data['specialization'] = Speciality::find($id);
-        $data['doctors'] = Doctor::where('speciality_id', $id)->get();
+        // Fetch the speciality along with its associated doctors
+        $speciality = Speciality::with('doctors.user')->find($id);
+        // Map doctors to the desired structure
+        $doctors = $speciality->doctors->map(function ($doctor) {
+            return [
+                'id' => $doctor->user->id,
+                'First name' => $doctor->user->f_name,
+                'Last name' => $doctor->user->l_name,
+                'email' => $doctor->user->email,
+                'phone' => $doctor->user->phone,
+                'hourly_rate' => $doctor->hourly_rate,
+            ];
+        });
+        // Prepare the response data
+        $data = [
+            'specialization_name' => $speciality->name,
+            'doctors' => $doctors,
+        ];
+
+        // Return success response
         return $this->successResponse($data, 'Speciality details');
-        // return view('specializations.show', $data);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the speciality
      */
     public function update(Request $request, string $id)
     {
@@ -68,7 +91,7 @@ class SpecialityController extends BaseController
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete speciality
      */
     public function destroy(string $id)
     {

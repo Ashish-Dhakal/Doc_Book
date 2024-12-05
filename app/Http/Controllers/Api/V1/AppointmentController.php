@@ -23,7 +23,7 @@ class AppointmentController extends BaseController
 {
     use AuthorizesRequests;
     /**
-     * Display a listing of the resource.
+     * Fetch all appointments
      */
     public function index()
     {
@@ -52,7 +52,7 @@ class AppointmentController extends BaseController
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create appointment
      */
     public function store(Request $request)
     {
@@ -63,7 +63,7 @@ class AppointmentController extends BaseController
             'date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
-            'patient_id' => ['nullable', function ($attribute, $value, $fail) {
+            'patient_id' => ['nullable', 'exists:patients,id', function ($attribute, $value, $fail) {
                 // Only apply the validation if the logged-in user is an admin
                 if (Auth::user()->roles === 'admin' && empty($value)) {
                     // $fail('The patient ID is required when submitting as admin.');
@@ -132,7 +132,7 @@ class AppointmentController extends BaseController
                         });
                 });
             })
-            ->exists(); 
+            ->exists();
         if ($appointmentSlots) {
             return $this->errorResponse('Doctor is not available at that time slot.');
         }
@@ -213,7 +213,7 @@ class AppointmentController extends BaseController
 
 
     /**
-     * Display the specified resource.
+     * Display appointment.
      */
     public function show(string $id)
     {
@@ -232,7 +232,7 @@ class AppointmentController extends BaseController
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update appointmnent  
      */
     public function update(Request $request, Appointment $appointment)
     {
@@ -375,11 +375,8 @@ class AppointmentController extends BaseController
         return $this->successResponse($appointment, 'Appointment updated successfully');
     }
 
-
-
-
     /**
-     * Remove the specified resource from storage.
+     * Delete appointment
      */
     public function destroy(string $id)
     {
@@ -399,6 +396,9 @@ class AppointmentController extends BaseController
     }
 
 
+    /**
+     * Update appointment status
+     */
     public function updateStatus(Request $request, Appointment $appointment, AppointmentSlot $appointmentSlot)
     {
         $request->validate([
