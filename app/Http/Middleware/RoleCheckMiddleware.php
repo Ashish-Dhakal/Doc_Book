@@ -22,6 +22,13 @@ class RoleCheckMiddleware
                 return $next($request);
             }
         }
+
+        //response for api
+        return response()->json([
+            'message' => 'You are not authorized to access this resource',
+        ], 403);
+
+        //
         return abort(403, 'Unauthorized action.');
     }
 }
