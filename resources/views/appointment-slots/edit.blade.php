@@ -19,16 +19,8 @@
                             <!-- Doctor -->
                             <div>
                                 <label for="doctor_id" class="block text-sm font-medium text-gray-700">Doctor</label>
-                                <select name="doctor_id" id="doctor_id"
-                                    class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    required>
-                                    <option value="">Select Doctor</option>
-                                    @foreach ($doctors as $doctor)
-                                        <option value="{{ $doctor->id }}"
-                                            {{ $appointmentSlot->doctor_id == $doctor->id ? 'selected' : '' }}>
-                                            {{ $doctor->user->f_name }} {{ $doctor->user->l_name }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" name="doctor_id" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500" value="{{$appointmentSlot->doctor->id}}" hidden>
+                                <input type="text" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500" value="{{$appointmentSlot->doctor->user->f_name}} {{$appointmentSlot->doctor->user->l_name}}" readonly>
                                 @error('doctor_id')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror

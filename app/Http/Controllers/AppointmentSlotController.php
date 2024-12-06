@@ -20,6 +20,9 @@ class AppointmentSlotController extends Controller
             $doctor = Doctor::where('user_id', $userId)->first();
             $appointmentSlots = AppointmentSlot::where('doctor_id', $doctor->id)->paginate(5);
         } else {
+
+            $appointmentSlots = AppointmentSlot::paginate(5);
+
             $appointmentSlots=AppointmentSlot::paginate(5);
         }
         return view('appointment-slots.index', compact('appointmentSlots'));
@@ -30,8 +33,12 @@ class AppointmentSlotController extends Controller
      */
     public function create()
     {
-        $doctors = Doctor::all();
-        return view('appointment-slots.create', compact('doctors'));
+        $data['doctors'] = Doctor::all();
+        if (Auth::user()->roles == 'doctor') {
+            $userId = Auth::user()->id;
+            $data['doctor'] = Doctor::where('user_id', $userId)->first();
+        }
+        return view('appointment-slots.create', $data);
     }
 
     /**
@@ -41,12 +48,39 @@ class AppointmentSlotController extends Controller
     {
         // dd($request->all());
         $request->validate([
-            'doctor_id' => 'required',
+            'doctor_id' => 'required:exists:doctors,id',
             'date' => 'required',
             'start_time' => 'required',
             'end_time' => 'required',
             'status' => 'required',
         ]);
+
+        //check the valoid doctor id 
+        $doctor = Doctor::find($request->doctor_id);
+        if (empty($doctor)) {
+            return redirect()->back()->with('error', 'Invalid doctor id');
+        }
+
+        $startDateTime = Carbon::parse($request->date . ' ' . $request->start_time);
+        $endDateTime = Carbon::parse($request->date . ' ' . $request->end_time);
+
+        // Check if the requested appointment time overlaps with an existing appointment for the doctor
+        $existingAppointment = AppointmentSlot::where('doctor_id', $request->doctor_id)
+            ->where(function ($query) use ($startDateTime, $endDateTime) {
+                $query->whereBetween('start_time', [$startDateTime, $endDateTime])
+                    ->orWhereBetween('end_time', [$startDateTime, $endDateTime])
+                    ->orWhere(function ($query) use ($startDateTime, $endDateTime) {
+                        $query->where('start_time', '<', $endDateTime)
+                            ->where('end_time', '>', $startDateTime);
+                    });
+            })
+            ->exists();
+
+        // If the appointment slot already exists, return a validation error
+        if ($existingAppointment) {
+            return back()->withErrors(['time_slot' => 'The requested time slot is already booked.'])->withInput();
+        }
+
 
         // Get the input times (24-hour format)
         $startTime = $request->input('start_time');
@@ -62,6 +96,7 @@ class AppointmentSlotController extends Controller
             // If end time is earlier than start time, return an error response
             // return redirect()->back()->withErrors(['end_time' => 'End time should be after start time.']);
             return redirect()->back()->with('error', 'End time should be after start time.');
+
         }
 
         $conflictingSchedule = AppointmentSlot::where('doctor_id', $request->input('doctor_id'))
@@ -84,6 +119,7 @@ class AppointmentSlotController extends Controller
             //     'error' => 'The requested time slot conflicts with an existing schedule for this doctor.',
             // ], 400); // Return a 400 Bad Request response with an error message
             return redirect()->back()->with('error', 'The requested time slot conflicts with an existing schedule for this doctor.');
+
         }
 
         $appointmentSlot = new AppointmentSlot();
@@ -110,8 +146,7 @@ class AppointmentSlotController extends Controller
      */
     public function edit($id)
     {
-        $data['appointmentSlot'] =  AppointmentSlot::find($id);
-        $data['doctors'] = Doctor::all();
+        $data['appointmentSlot'] = AppointmentSlot::find($id);  
         return view('appointment-slots.edit', $data);
     }
 
@@ -127,6 +162,12 @@ class AppointmentSlotController extends Controller
             'end_time' => 'required',
             'status' => 'required',
         ]);
+
+           //check the valoid doctor id 
+           $doctor = Doctor::find($request->doctor_id);
+           if (empty($doctor)) {
+               return redirect()->back()->with('error', 'Invalid doctor id');
+           }
 
         $appointmentSlot = AppointmentSlot::find($id);
         $appointmentSlot->doctor_id = $request->input('doctor_id');
