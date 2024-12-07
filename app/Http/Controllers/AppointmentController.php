@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper\AppointmentHelper;
 use App\Mail\AppointmentCompleteMail;
 use Carbon\Carbon;
 use App\Models\Doctor;
@@ -22,30 +23,26 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class AppointmentController extends Controller
 {
     use AuthorizesRequests;
+
+    protected $appointmentHelper; 
+
+     public function __construct(AppointmentHelper $appointmentHelper)
+     {
+         // Store the instance in the property
+         $this->appointmentHelper = $appointmentHelper;
+     }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-
         $this->authorize('viewAny', Appointment::class);
 
+        $data = $this->appointmentHelper->getAppointments();
 
-        $userId = Auth::user()->id;
-        $patient = Patient::where('user_id', $userId)->first();
-        $doctorId = Doctor::where('user_id', $userId)->first();
-        $data['specialities'] = Speciality::all();
-        // dd($specialities);
-
-        if ($patient) {
-            $data['appointments'] = Appointment::where('patient_id', $patient->id)->paginate(5);
-        } elseif (Auth::user()->roles == 'admin') {
-            $data['appointments'] = Appointment::paginate(5);
-        } elseif (Auth::user()->roles == 'doctor') {
-            $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
-                ->where('status', 'booked')->get();
-        } else {
-            return redirect()->route('login');
+        // Redirect if no appointments
+        if (empty($data['appointments']) || $data['appointments']->isEmpty()) {
+            return redirect()->route('login')->withErrors('No appointments found.');
         }
 
         return view('appointments.index', $data);
@@ -56,8 +53,6 @@ class AppointmentController extends Controller
      */
     public function create(Request $request)
     {
-
-
         $userRole = Auth::user()->roles;
 
         if ($userRole == 'admin') {
@@ -81,154 +76,59 @@ class AppointmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, AppointmentSlot $appointmentSlot)
+    public function store(Request $request, AppointmentHelper $appointmentHelper)
     {
-        // dd($request->toArray());
-
         $request->validate([
-            'doctor_id' => 'required',
-            'date' => 'required',
+            'doctor_id' => 'required|exists:doctors,id',
+            'date' => 'required|date',
             'start_time' => 'required',
             'end_time' => 'required',
-            'patient_id' => ['nullable', function ($attribute, $value, $fail) {
-                // Only apply the validation if the logged-in user is an admin
+            'patient_id' => ['nullable', 'exists:patients,id', function ($attribute, $value, $fail) {
                 if (Auth::user()->roles === 'admin' && empty($value)) {
                     $fail('The patient ID is required when submitting as admin.');
                 }
             }],
         ]);
-
-
-
-        $doctor = Doctor::find($request->doctor_id);
-        $patient = Patient::find($request->patient_id);
-        if (Auth::user()->roles == 'admin') {
-            if ((empty($doctor) || empty($patient))) {
-                return redirect()->back()->with('error', 'Invalid doctor id or patient id');
-            }
+    
+        // Validate times
+        $timeError = $appointmentHelper->validateTime($request->start_time, $request->end_time);
+        if ($timeError) {
+            return redirect()->back()->with('error', $timeError);
         }
-
-        // Get the input times (24-hour format)
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
-
-        // Convert the times to Carbon instances (don't format to 12-hour yet)
-        $startTimeCarbon = Carbon::createFromFormat('H:i', $startTime);
-        $endTimeCarbon = Carbon::createFromFormat('H:i', $endTime);
-
-
-        if ($endTimeCarbon->lt($startTimeCarbon)) {
-            return redirect()->back()->with('error', 'End time should be after start time.');
+    
+        // Check doctor availability
+        $availabilityError = $appointmentHelper->checkDoctorAvailability(
+            $request->doctor_id,
+            $request->date,
+            $request->start_time,
+            $request->end_time
+        );
+    
+        if ($availabilityError) {
+            return redirect()->back()->with('error', $availabilityError);
         }
-
-        // check if the doctor is availabelin that time or not
-        $doctorId = $request->input('doctor_id'); // get the doctor id
-        $date = $request->input('date'); // get the date
-
-        $conflict = Appointment::where('doctor_id', $doctorId)
-            ->where('date', $date)
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->whereBetween('start_time', [$startTime, $endTime])
-                    ->orWhereBetween('end_time', [$startTime, $endTime])
-                    ->orWhere(function ($query) use ($startTime, $endTime) {
-                        $query->where('start_time', '<=', $startTime)
-                            ->where('end_time', '>=', $endTime);
-                    });
-            })
-            ->where('status', ['pending', 'booked'])
-            ->exists();
-
-        if ($conflict) {
-            return redirect()->back()->with('error', 'The selected time slot is already booked for this doctor.');
-        }
-
-
-        $appointmentSlots = AppointmentSlot::where('doctor_id', $doctorId)
-            ->where('date', $date)
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->where(function ($subQuery) use ($startTime, $endTime) {
-                    $subQuery->where('status', ['unavailable', 'booked'])
-                        ->where(function ($timeQuery) use ($startTime, $endTime) {
-
-                            $timeQuery->where('start_time', '<', $endTime)
-                                ->where('end_time', '>', $startTime);
-                        });
-                });
-            })
-            ->first();
-        if ($appointmentSlots) {
-            return redirect()->back()->with('error', 'Doctor is not available at that time.');
-        }
-
-
-
-        if (Auth::user()->roles == 'patient') {
-            $userId = Auth::user()->id;
-            $patient = Patient::where('user_id', $userId)->first();
-            $patientId = $patient->id;
-            $appointment = new Appointment();
-            $appointment->patient_id = $patientId;
-            $appointment->doctor_id = $request->input('doctor_id');
-            $appointment->date = $request->input('date');
-            $appointment->start_time = $request->input('start_time');
-            $appointment->end_time = $request->input('end_time');
-
-
-
-            // Send email to both the patient and the doctor
-            $doctor = Doctor::find($appointment->doctor_id);
-            $patientEmail = $patient->user->email;
-            $doctorEmail = $doctor->user->email;
-
-            // // Send email to patient
-            // Mail::to($patientEmail)
-            //     ->send(new AppointmentMail($appointment, 'patient'));
-
-            // // Send email to doctor (cc)
-            // Mail::to($doctorEmail)
-            //     ->send(new AppointmentMail($appointment, 'doctor'));
-
-
-            $appointment->save();
-            return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
-        } elseif (Auth::user()->roles == 'admin') {
-            $appointment = new Appointment();
-            $appointment->patient_id = $request->input('patient_id');
-            $appointment->doctor_id = $request->input('doctor_id');
-            $appointment->date = $request->input('date');
-            $appointment->start_time = $request->input('start_time');
-            $appointment->end_time = $request->input('end_time');
-            $appointment->status = 'booked';
-            $appointment->save();
-
-            // Send email to both the patient and the doctor
-            $patient = Patient::find($appointment->patient_id);
-            $doctor = Doctor::find($appointment->doctor_id);
-            $patientEmail = $patient->user->email;
-            $doctorEmail = $doctor->user->email;
-
-            // Send email to patient
-            Mail::to($patientEmail)
-                ->send(new AppointmentMail($appointment, 'patient'));
-
-            // Send email to doctor (cc)
-            Mail::to($doctorEmail)
-                ->send(new AppointmentMail($appointment, 'doctor'));
-
-
-            // dd($request->input('doctor_id'));
-            $appointmentSlot = new AppointmentSlot();
-            $appointmentSlot->doctor_id = $request->input('doctor_id');
-            $appointmentSlot->date = $request->input('date');
-            $appointmentSlot->start_time = $request->input('start_time');
-            $appointmentSlot->end_time = $request->input('end_time');
-            $appointmentSlot->status = 'booked';
-            $appointmentSlot->save();
-
-            return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
+    
+        $appointmentData = [
+            'doctor_id' => $request->doctor_id,
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'status' => 'booked',
+        ];
+    
+        if (Auth::user()->roles === 'patient') {
+            $patient = Patient::where('user_id', Auth::id())->first();
+            $appointmentData['patient_id'] = $patient->id;
+        } else if (Auth::user()->roles === 'admin') {
+            $appointmentData['patient_id'] = $request->patient_id;
+            $appointmentData['slot'] = true;
         } else {
-            abort(403);
+            abort(403, 'Unauthorized');
         }
+    
+        $appointmentHelper->createAppointment($appointmentData);
+    
+        return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
     }
 
     /**

@@ -11,17 +11,26 @@ use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Models\PatientHistory;
 use App\Models\AppointmentSlot;
+use App\Helper\AppointmentHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Api\V1\BaseController;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use function PHPUnit\Framework\isEmpty;
 use Illuminate\Support\Facades\Validator;
 
-use function PHPUnit\Framework\isEmpty;
+use App\Http\Controllers\Api\V1\BaseController;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AppointmentController extends BaseController
 {
     use AuthorizesRequests;
+
+    protected $appointmentHelper;
+
+    public function __construct(AppointmentHelper $appointmentHelper)
+    {
+        $this->appointmentHelper = $appointmentHelper;
+    }
+
     /**
      * Fetch all appointments
      */
@@ -29,214 +38,95 @@ class AppointmentController extends BaseController
     {
         $this->authorize('viewAny', Appointment::class);
 
+        $data = $this->appointmentHelper->getAppointments();
 
-        $userId = Auth::user()->id;
-        $patient = Patient::where('user_id', $userId)->first();
-        $doctorId = Doctor::where('user_id', $userId)->with('speciality')->first();
-        // $data['specialities'] = Speciality::all();
-
-        if ($patient) {
-            $data['appointments'] = Appointment::where('patient_id', $patient->id)->paginate(5)
-                ->map(function ($appointment) {
-                    return [
-                        'id' => $appointment->id,
-                        'date' => $appointment->date,
-                        'start_time' => $appointment->start_time,
-                        'end_time' => $appointment->end_time,
-                        'status' => $appointment->status,
-                        'doctor_id' => $appointment->doctor_id,
-                        'doctor_fname' => $appointment->doctor->user->f_name,
-                        'doctor_lname' => $appointment->doctor->user->l_name,
-                        'doctor_speciality' => $appointment->doctor->speciality->name,
-                        'hourly_rate' => $appointment->doctor->hourly_rate,
-                        'patient_id' => $appointment->patient_id,
-                        'patient_fname' => $appointment->patient->user->f_name,
-                        'patient_lname' => $appointment->patient->user->l_name,
-                        'patient_email' => $appointment->patient->user->email,
-                    ];
-                });
-
-            if ($data['appointments']->isEmpty()) {
-                return $this->errorResponse('No appointments found for this patient.');
-            }
-        } elseif (Auth::user()->roles == 'admin') {
-            $data['appointments'] = Appointment::paginate(5);
-            if ($data['appointments']->isEmpty()) {
-                return $this->errorResponse('No appointments found in the system.');
-            }
-        } elseif (Auth::user()->roles == 'doctor') {
-            $data['appointments'] = Appointment::where('doctor_id', $doctorId->id)
-                ->where('status', 'booked')->get();
-
-            if ($data['appointments']->isEmpty()) {
-                return $this->errorResponse('No appointments found for this docotr.');
-            }
-        } else {
-            return redirect()->route('login');
+        if (empty($data['appointments']) || $data['appointments']->isEmpty()) {
+            return $this->errorResponse('No appointments found for the current user.');
         }
 
-        // return view('appointments.index', $data);
+        // Transform data if needed (specific to API)
+        $data['appointments'] = $data['appointments']->map(function ($appointment) {
+            return [
+                'id' => $appointment->id,
+                'date' => $appointment->date,
+                'start_time' => $appointment->start_time,
+                'end_time' => $appointment->end_time,
+                'status' => $appointment->status,
+                'doctor_id' => $appointment->doctor_id,
+                'doctor_fname' => $appointment->doctor->user->f_name,
+                'doctor_lname' => $appointment->doctor->user->l_name,
+                'doctor_speciality' => $appointment->doctor->speciality->name,
+                'hourly_rate' => $appointment->doctor->hourly_rate,
+                'patient_id' => $appointment->patient_id,
+                'patient_fname' => $appointment->patient->user->f_name,
+                'patient_lname' => $appointment->patient->user->l_name,
+                'patient_email' => $appointment->patient->user->email,
+            ];
+        });
+
         return $this->successResponse($data, 'Appointments retrieved successfully');
     }
 
     /**
      * Create appointment
      */
-    public function store(Request $request)
+    public function store(Request $request, AppointmentHelper $appointmentHelper)
     {
-        // dd($request->toArray());
-
-        $validateAppointment = Validator::make($request->all(), [
-            'doctor_id' => ['required'],
-            'date' => ['required', 'date'],
-            'start_time' => ['required'],
-            'end_time' => ['required'],
+        $validator = Validator::make($request->all(), [
+            'doctor_id' => 'required|exists:doctors,id',
+            'date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'required',
             'patient_id' => ['nullable', 'exists:patients,id', function ($attribute, $value, $fail) {
-                // Only apply the validation if the logged-in user is an admin
                 if (Auth::user()->roles === 'admin' && empty($value)) {
-                    // $fail('The patient ID is required when submitting as admin.');
-
-                    return $this->errorResponse('The patient ID is required when submitting as admin.');
+                    $fail('The patient ID is required when submitting as admin.');
                 }
             }],
         ]);
-
-        if ($validateAppointment->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validateAppointment->errors()->all(),
-            ], 422); // 422 is commonly used for validation errors
+    
+        if ($validator->fails()) {
+            return $this->errorResponse('Validation error', $validator->errors(), 422);
         }
-
-        // Get the input times (24-hour format)
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
-
-        // Convert the times to Carbon instances (don't format to 12-hour yet)
-        $startTimeCarbon = Carbon::createFromFormat('H:i', $startTime);
-        $endTimeCarbon = Carbon::createFromFormat('H:i', $endTime);
-
-
-        if ($endTimeCarbon->lt($startTimeCarbon)) {
-            // return redirect()->back()->with('error', 'End time should be after start time.');
-
-            return $this->errorResponse('End time should be after start time.');
+    
+        // Validate times
+        $timeError = $appointmentHelper->validateTime($request->start_time, $request->end_time);
+        if ($timeError) {
+            return $this->errorResponse($timeError);
         }
-
-        // check if the doctor is availabelin that time or not
-        $doctorId = $request->input('doctor_id');
-        $date = $request->input('date');
-
-        $conflict = Appointment::where('doctor_id', $doctorId)
-            ->where('date', $date)
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->whereBetween('start_time', [$startTime, $endTime])
-                    ->orWhereBetween('end_time', [$startTime, $endTime])
-                    ->orWhere(function ($query) use ($startTime, $endTime) {
-                        $query->where('start_time', '<=', $startTime)
-                            ->where('end_time', '>=', $endTime);
-                    });
-            })
-            ->whereIn('status', ['pending', 'booked'])
-            ->exists();
-
-
-        if ($conflict) {
-
-            return $this->errorResponse('The selected time slot is already booked for this doctor.');
+    
+        // Check doctor availability
+        $availabilityError = $appointmentHelper->checkDoctorAvailability(
+            $request->doctor_id,
+            $request->date,
+            $request->start_time,
+            $request->end_time
+        );
+    
+        if ($availabilityError) {
+            return $this->errorResponse($availabilityError);
         }
-
-
-        $appointmentSlots = AppointmentSlot::where('doctor_id', $doctorId)
-            ->where('date', $date)
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->where(function ($subQuery) use ($startTime, $endTime) {
-                    // Check if the time slot is either booked or unavailable
-                    $subQuery->whereIn('status', ['unavailable', 'booked'])
-                        ->where(function ($timeQuery) use ($startTime, $endTime) {
-                            // Check for overlapping times
-                            $timeQuery->where('start_time', '<', $endTime)
-                                ->where('end_time', '>', $startTime);
-                        });
-                });
-            })
-            ->exists();
-        if ($appointmentSlots) {
-            return $this->errorResponse('Doctor is not available at that time slot.');
-        }
-
-
-
-        if (Auth::user()->roles == 'patient') {
-            $userId = Auth::user()->id;
-            $patient = Patient::where('user_id', $userId)->first();
-            $patientId = $patient->id;
-            $appointment = new Appointment();
-            $appointment->patient_id = $patientId;
-            $appointment->doctor_id = $request->input('doctor_id');
-            $appointment->date = $request->input('date');
-            $appointment->start_time = $request->input('start_time');
-            $appointment->end_time = $request->input('end_time');
-
-
-
-            // Send email to both the patient and the doctor
-            $doctor = Doctor::find($appointment->doctor_id);
-            $patientEmail = $patient->user->email;
-            $doctorEmail = $doctor->user->email;
-
-            // // Send email to patient
-            // Mail::to($patientEmail)
-            //     ->send(new AppointmentMail($appointment, 'patient'));
-
-            // // Send email to doctor 
-            // Mail::to($doctorEmail)
-            //     ->send(new AppointmentMail($appointment, 'doctor'));
-
-
-            $appointment->save();
-            return $this->successResponse($appointment, 'Appointment created successfully');
-        } elseif (Auth::user()->roles == 'admin') {
-            $appointment = new Appointment();
-            $appointment->patient_id = $request->input('patient_id');
-            $appointment->doctor_id = $request->input('doctor_id');
-            $appointment->date = $request->input('date');
-            $appointment->start_time = $request->input('start_time');
-            $appointment->end_time = $request->input('end_time');
-            $appointment->status = 'booked';
-            $appointment->save();
-
-            // Send email to both the patient and the doctor
-            $patient = Patient::find($appointment->patient_id);
-            $doctor = Doctor::find($appointment->doctor_id);
-            $patientEmail = $patient->user->email;
-            $doctorEmail = $doctor->user->email;
-
-            // // Send email to patient 
-            // Mail::to($patientEmail)
-            //     ->send(new AppointmentMail($appointment, 'patient'));
-
-            // // Send email to doctor 
-            // Mail::to($doctorEmail)
-            //     ->send(new AppointmentMail($appointment, 'doctor'));
-
-
-            // dd($request->input('doctor_id'));
-            $appointmentSlot = new AppointmentSlot();
-            $appointmentSlot->doctor_id = $request->input('doctor_id');
-            $appointmentSlot->date = $request->input('date');
-            $appointmentSlot->start_time = $request->input('start_time');
-            $appointmentSlot->end_time = $request->input('end_time');
-            $appointmentSlot->status = 'booked';
-            $appointmentSlot->save();
-
-            // return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
-
-            return $this->successResponse($appointment, 'Appointment created successfully');
+    
+        $appointmentData = [
+            'doctor_id' => $request->doctor_id,
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'status' => 'booked',
+        ];
+    
+        if (Auth::user()->roles === 'patient') {
+            $patient = Patient::where('user_id', Auth::id())->first();
+            $appointmentData['patient_id'] = $patient->id;
+        } else if (Auth::user()->roles === 'admin') {
+            $appointmentData['patient_id'] = $request->patient_id;
+            $appointmentData['slot'] = true;
         } else {
-
-            return $this->errorResponse('You are not authorized to create an appointment.');
+            return $this->errorResponse('Unauthorized', [], 403);
         }
+    
+        $appointment = $appointmentHelper->createAppointment($appointmentData);
+    
+        return $this->successResponse($appointment, 'Appointment created successfully');
     }
 
 
@@ -262,7 +152,7 @@ class AppointmentController extends BaseController
     /**
      * Update appointmnent  
      */
-    public function update(Request $request, Appointment $appointment)
+    public function update(Request $request, Appointment $appointment ,AppointmentHelper $appointmentHelper)
     {
         if ($appointment->status == 'completed' || $appointment->status == 'booked') {
             return $this->errorResponse('This appointment is already completed or booked and cannot be modified.', 422);
@@ -274,11 +164,11 @@ class AppointmentController extends BaseController
 
         // Validate the incoming request
         $validateAppointment = Validator::make($request->all(), [
-            'doctor_id' => ['required'],
+            'doctor_id' => ['required|exists:doctors,id'],
             'date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
-            'patient_id' => ['nullable', function ($attribute, $value, $fail) {
+            'patient_id' => ['nullable|exists:patients,id', function ($attribute, $value, $fail) {
                 // Only apply the validation if the logged-in user is an admin
                 if (Auth::user()->roles === 'admin' && empty($value)) {
                     return $this->errorResponse('The patient ID is required when submitting as admin.');
@@ -298,13 +188,10 @@ class AppointmentController extends BaseController
         $startTime = $request->input('start_time');
         $endTime = $request->input('end_time');
 
-        // Convert the times to Carbon instances (don't format to 12-hour yet)
-        $startTimeCarbon = Carbon::createFromFormat('H:i', $startTime);
-        $endTimeCarbon = Carbon::createFromFormat('H:i', $endTime);
 
-        // Check if end time is after start time
-        if ($endTimeCarbon->lt($startTimeCarbon)) {
-            return $this->errorResponse('End time should be after start time.');
+        $timeError = $appointmentHelper->validateTime($request->start_time, $request->end_time);
+        if ($timeError) {
+            return $this->errorResponse($timeError);
         }
 
         // Check if the doctor has any unavailable slots or existing appointments at the given time and date
@@ -328,39 +215,15 @@ class AppointmentController extends BaseController
             return $this->errorResponse('The doctor has an existing appointment or unavailable slot at this time.');
         }
 
-        // Check if the doctor is available at the selected time slot for the update
-        $conflict = Appointment::where('doctor_id', $doctorId)
-            ->where('date', $date)
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->whereBetween('start_time', [$startTime, $endTime])
-                    ->orWhereBetween('end_time', [$startTime, $endTime])
-                    ->orWhere(function ($query) use ($startTime, $endTime) {
-                        $query->where('start_time', '<=', $startTime)
-                            ->where('end_time', '>=', $endTime);
-                    });
-            })
-            ->where('status', ['pending', 'booked'])
-            ->where('id', '!=', $appointment->id) // Exclude the current appointment from conflict check
-            ->exists();
-
-        if ($conflict) {
-            return $this->errorResponse('The selected time slot is already booked for this doctor.');
-        }
-
-        // Check if the doctor has any unavailable slots during the new time range
-        $appointmentSlots = AppointmentSlot::where('doctor_id', $doctorId)
-            ->where('date', $date)
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->where('status', 'unavailable')
-                    ->where(function ($timeQuery) use ($startTime, $endTime) {
-                        $timeQuery->where('start_time', '<', $endTime)
-                            ->where('end_time', '>', $startTime);
-                    });
-            })
-            ->exists();
-
-        if ($appointmentSlots) {
-            return $this->errorResponse('Doctor is not available at the selected time.');
+        $availabilityError = $appointmentHelper->checkDoctorAvailability(
+            $request->doctor_id,
+            $request->date,
+            $request->start_time,
+            $request->end_time
+        );
+    
+        if ($availabilityError) {
+            return $this->errorResponse($availabilityError);
         }
 
         // Now update the appointment
