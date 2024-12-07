@@ -72,13 +72,20 @@ class AppointmentSlotController extends BaseController
     {
         // Validate the incoming data
         $validated = Validator::make($request->all(), [
-            'doctor_id' => 'required|numeric',
+            'doctor_id' => function ($attribute, $value, $fail) use ($request) {
+                // Only validate doctor_id if status is 'doctor'
+                if (Auth::user()->roles == 'admin' && empty($value)) {
+                    $fail($attribute . ' is required for admin.');
+                }
+            },
             'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
             'status' => 'required|string',
         ]);
 
+
+        // dd($request->doctor_id);
         // Check if validation failed
         if ($validated->fails()) {
             return $this->errorResponse('Validation failed', $validated->errors()->all());
@@ -96,8 +103,20 @@ class AppointmentSlotController extends BaseController
             return $this->errorResponse('End time must be after start time.', 400);
         }
 
+        if (Auth::user()->roles == 'admin') {
+            $doctor_id = $request->input('doctor_id');
+            $doctor = Doctor::where('user_id', $doctor_id)->first();
+            if (!$doctor) {
+                return $this->errorResponse('Doctor not found', 404);
+            }
+        } else {
+            $userId = Auth::user()->id;
+            $doctor = Doctor::where('user_id', $userId)->first();
+            $doctor_id = $doctor->id;
+        }
+
         // Check for conflicting schedules
-        $conflictingSchedule = AppointmentSlot::where('doctor_id', $request->input('doctor_id'))
+        $conflictingSchedule = AppointmentSlot::where('doctor_id', $doctor_id)
             ->whereDate('date', $request->input('date')) // Check for the same date
             ->where(function ($query) use ($startTimeCarbon, $endTimeCarbon) {
                 $query->whereBetween('start_time', [$startTimeCarbon, $endTimeCarbon])
@@ -112,12 +131,12 @@ class AppointmentSlotController extends BaseController
 
         // If there's a conflict, return error response
         if ($conflictingSchedule) {
-            return $this->errorResponse('The requested time slot conflicts with an existing schedule for this doctor.', 400);
+            return $this->errorResponse('The requested time slot already booked for this doctor.', 400);
         }
 
         // Create the new appointment slot
         $appointmentSlot = new AppointmentSlot();
-        $appointmentSlot->doctor_id = $request->input('doctor_id');
+        $appointmentSlot->doctor_id = $doctor_id;
         $appointmentSlot->date = $request->input('date');
         $appointmentSlot->start_time = $startTime; // Store the raw start time
         $appointmentSlot->end_time = $endTime;     // Store the raw end time
@@ -144,7 +163,7 @@ class AppointmentSlotController extends BaseController
             'start_time' => $appointmentSlot->start_time,
             'end_time' => $appointmentSlot->end_time,
             'status' => $appointmentSlot->status,
-            ]; 
+        ];
         if (!$appointmentSlot) {
             return $this->errorResponse('Appointment Slot not found', 404);
         }

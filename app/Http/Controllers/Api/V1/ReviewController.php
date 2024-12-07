@@ -40,77 +40,77 @@ class ReviewController extends BaseController
     }
 
 
-    // /**
-    //  * Create a new review
-    //  */
-    // public function store(Request $request)
-    // {
+    /**
+     * Create a new review
+     */
+    public function store(Request $request)
+    {
 
-    //     // Validate the request
-    //     $validateReview = Validator::make($request->all(), [
-    //         'appointment_id' => 'required|exists:appointments,id',
-    //         'comment' => 'required|string|max:1000',
-    //         'pdf' => 'nullable|mimes:pdf|max:10240',
-    //     ]);
+        // Validate the request
+        $validateReview = Validator::make($request->all(), [
+            'appointment_id' => 'required|exists:appointments,id',
+            'comment' => 'required|string|max:1000',
+            'pdf' => 'nullable|mimes:pdf|max:10240',
+        ]);
 
-    //     if ($validateReview->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validation failed',
-    //             'errors' => $validateReview->errors()->all(),
-    //         ], 422); // 422 is commonly used for validation errors
-    //     }
+        if ($validateReview->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validateReview->errors()->all(),
+            ], 422); // 422 is commonly used for validation errors
+        }
 
-    //     // Handle PDF upload if it exists
-    //     $pdfPath = null;
-    //     if ($request->hasFile('pdf')) {
-    //         if ($request->file('pdf')->isValid()) {
-    //             $pdfPath = $request->file('pdf')->store('reviews/pdfs', 'public');
-    //         } else {
-    //             return $this->errorResponse('The uploaded file is invalid.');
-    //         }
-    //     }
+        // Handle PDF upload if it exists
+        $pdfPath = null;
+        if ($request->hasFile('pdf')) {
+            if ($request->file('pdf')->isValid()) {
+                $pdfPath = $request->file('pdf')->store('reviews/pdfs', 'public');
+            } else {
+                return $this->errorResponse('The uploaded file is invalid.');
+            }
+        }
 
-    //     // Create a new review and associate it with the appointment
-    //     try {
-    //         $review = new Review();
-    //         $review->appointment_id = $request->appointment_id;
-    //         $review->comment = $request->comment;
-    //         if ($pdfPath) {
-    //             $review->pdf = $pdfPath;
-    //         }
-    //         $review->save();
+        // Create a new review and associate it with the appointment
+        try {
+            $review = new Review();
+            $review->appointment_id = $request->appointment_id;
+            $review->comment = $request->comment;
+            if ($pdfPath) {
+                $review->pdf = $pdfPath;
+            }
+            $review->save();
 
      
 
-    //         return $this->successResponse($review, 'Review submitted successfully.');
+            return $this->successResponse($review, 'Review submitted successfully.');
 
-    //     } catch (\Exception $e) {
+        } catch (\Exception $e) {
   
-    //         return $this->errorResponse('Failed to save review. Please try again.');
-    //     }
-    // }
+            return $this->errorResponse('Failed to save review. Please try again.');
+        }
+    }
 
-    // /**
-    //  * Display the specified resource.
-    //  */
-    // public function show(string $id)
-    // {
-    //     //
-    // }
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
 
-    // /**
-    //  * Update review
-    //  */
-    // public function update(Request $request, string $id)
-    // {
-    //     //
-    // }
+    /**
+     * Update review
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
 
-    // /**
-    //  * Delete review
-    //  */
-    // public function destroy(string $id)
-    // {
-    //     //
-    // }
+    /**
+     * Delete review
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
 }

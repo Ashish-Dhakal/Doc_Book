@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Doctor;
 use App\Models\Speciality;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Api\V1\BaseController;
@@ -56,6 +57,9 @@ class SpecialityController extends BaseController
     {
         // Fetch the speciality along with its associated doctors
         $speciality = Speciality::with('doctors.user')->find($id);
+        if (!$speciality) {
+            return $this->errorResponse('Speciality not found', 404);
+        }
         // Map doctors to the desired structure
         $doctors = $speciality->doctors->map(function ($doctor) {
             return [
@@ -80,15 +84,28 @@ class SpecialityController extends BaseController
     /**
      * Update the speciality
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, int $id)
     {
+        // Validate the incoming request
         $validated = $request->validate([
-            'name' => 'required|string|max:20',
+            'name' => ['required', 'string', 'max:20', Rule::unique('specialities')->ignore($id),],
         ]);
+
+        // Find the specialty by its ID
         $specialization = Speciality::find($id);
+
+        // Return an error if the specialty is not found
+        if (!$specialization) {
+            return $this->errorResponse('Speciality not found', 404);
+        }
+
+        // Update the specialty with the validated data
         $specialization->update($validated);
+
+        // Return a success response
         return $this->successResponse($specialization, 'Speciality updated successfully');
     }
+
 
     /**
      * Delete speciality
@@ -96,6 +113,10 @@ class SpecialityController extends BaseController
     public function destroy(string $id)
     {
         $specialization = Speciality::find($id);
+        if (!$specialization) {
+            return $this->errorResponse('Speciality not found', 404);
+        }
+
         $specialization->delete();
         // return redirect()->route('specializations.index')->with('success', 'Speciality deleted successfully');
         return $this->successResponse([], 'Speciality deleted successfully');
