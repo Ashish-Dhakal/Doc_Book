@@ -10,9 +10,7 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\SpecialityController;
 use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\AppointmentSlotController;
-
-
-
+use App\Http\Controllers\Api\V1\PatientController;
 
 // API Routes
 Route::prefix('V1')->group(function () {
@@ -53,6 +51,9 @@ Route::prefix('V1')->group(function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
             Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
+   
+            Route::apiResource('patients', PatientController::class)->middleware('role:patient');
+            Route::apiResource('doctors', DoctorController::class)->middleware('role:doctor');
 
             Route::get('/payment/{id}/pay', [PaymentController::class, 'pay'])->name('payment.pay');
             Route::post('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
