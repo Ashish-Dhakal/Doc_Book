@@ -72,12 +72,12 @@ class AppointmentSlotController extends BaseController
     {
         // Validate the incoming data
         $validated = Validator::make($request->all(), [
-            'doctor_id' => function ($attribute, $value, $fail) use ($request) {
+            'doctor_id' => ['required', 'exists:doctors,id', function ($attribute, $value, $fail) use ($request) {
                 // Only validate doctor_id if status is 'doctor'
                 if (Auth::user()->roles == 'admin' && empty($value)) {
                     $fail($attribute . ' is required for admin.');
                 }
-            },
+            }],
             'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
@@ -182,7 +182,12 @@ class AppointmentSlotController extends BaseController
 
         // Validate the incoming data
         $validated = Validator::make($request->all(), [
-            'doctor_id' => 'required|numeric',
+            'doctor_id' => ['required', 'exists:doctors,id', function ($attribute, $value, $fail) use ($request) {
+                // Only validate doctor_id if status is 'doctor'
+                if (Auth::user()->roles == 'admin' && empty($value)) {
+                    $fail($attribute . ' is required for admin.');
+                }
+            }],
             'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i',
@@ -204,6 +209,37 @@ class AppointmentSlotController extends BaseController
         // Check if end time is after start time
         if ($endTimeCarbon->lte($startTimeCarbon)) {
             return $this->errorResponse('End time must be after start time.', 400);
+        }
+
+        if (Auth::user()->roles == 'admin') {
+            $doctor_id = $request->input('doctor_id');
+            $doctor = Doctor::where('user_id', $doctor_id)->first();
+            if (!$doctor) {
+                return $this->errorResponse('Doctor not found', 404);
+            }
+        } else {
+            $userId = Auth::user()->id;
+            $doctor = Doctor::where('user_id', $userId)->first();
+            $doctor_id = $doctor->id;
+        }
+
+        // Check for conflicting schedules
+        $conflictingSchedule = AppointmentSlot::where('doctor_id', $doctor_id)
+            ->whereDate('date', $request->input('date')) // Check for the same date
+            ->where(function ($query) use ($startTimeCarbon, $endTimeCarbon) {
+                $query->whereBetween('start_time', [$startTimeCarbon, $endTimeCarbon])
+                    ->orWhereBetween('end_time', [$startTimeCarbon, $endTimeCarbon])
+                    ->orWhere(function ($query) use ($startTimeCarbon, $endTimeCarbon) {
+                        // Full overlap: Existing schedule fully covers the new time range
+                        $query->where('start_time', '<', $startTimeCarbon)
+                            ->where('end_time', '>', $endTimeCarbon);
+                    });
+            })
+            ->exists();
+
+        // If there's a conflict, return error response
+        if ($conflictingSchedule) {
+            return $this->errorResponse('The requested time slot already booked for this doctor.', 400);
         }
 
 
