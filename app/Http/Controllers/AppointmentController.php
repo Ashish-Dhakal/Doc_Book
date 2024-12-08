@@ -17,6 +17,7 @@ use App\Models\PatientHistory;
 use App\Models\AppointmentSlot;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 
@@ -24,13 +25,13 @@ class AppointmentController extends Controller
 {
     use AuthorizesRequests;
 
-    protected $appointmentHelper; 
+    protected $appointmentHelper;
 
-     public function __construct(AppointmentHelper $appointmentHelper)
-     {
-         // Store the instance in the property
-         $this->appointmentHelper = $appointmentHelper;
-     }
+    public function __construct(AppointmentHelper $appointmentHelper)
+    {
+        // Store the instance in the property
+        $this->appointmentHelper = $appointmentHelper;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -78,7 +79,7 @@ class AppointmentController extends Controller
      */
     public function store(Request $request, AppointmentHelper $appointmentHelper)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
             'start_time' => 'required',
@@ -89,13 +90,16 @@ class AppointmentController extends Controller
                 }
             }],
         ]);
-    
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->all());
+        }
+
         // Validate times
         $timeError = $appointmentHelper->validateTime($request->start_time, $request->end_time);
         if ($timeError) {
             return redirect()->back()->with('error', $timeError);
         }
-    
+
         // Check doctor availability
         $availabilityError = $appointmentHelper->checkDoctorAvailability(
             $request->doctor_id,
@@ -103,11 +107,11 @@ class AppointmentController extends Controller
             $request->start_time,
             $request->end_time
         );
-    
+
         if ($availabilityError) {
             return redirect()->back()->with('error', $availabilityError);
         }
-    
+
         $appointmentData = [
             'doctor_id' => $request->doctor_id,
             'date' => $request->date,
@@ -115,7 +119,7 @@ class AppointmentController extends Controller
             'end_time' => $request->end_time,
             'status' => 'booked',
         ];
-    
+
         if (Auth::user()->roles === 'patient') {
             $patient = Patient::where('user_id', Auth::id())->first();
             $appointmentData['patient_id'] = $patient->id;
@@ -125,9 +129,9 @@ class AppointmentController extends Controller
         } else {
             abort(403, 'Unauthorized');
         }
-    
+
         $appointmentHelper->createAppointment($appointmentData);
-    
+
         return redirect()->route('appointments.index')->with('success', 'Appointment created successfully');
     }
 
@@ -156,7 +160,7 @@ class AppointmentController extends Controller
     public function edit($id)
     {
         $appointment = Appointment::find($id);
-        if ($appointment->status == 'completed'||$appointment->status == 'booked') {
+        if ($appointment->status == 'completed' || $appointment->status == 'booked') {
             return redirect()->route('appointments.index')->with('error', 'This appointment is already completed and cannot be modified.');
         }
 
@@ -326,129 +330,47 @@ class AppointmentController extends Controller
     }
 
 
-
     public function updateStatus(Request $request, Appointment $appointment, AppointmentSlot $appointmentSlot)
     {
         $request->validate([
-            'status' => 'required|in:pending,booked,rescheduled,cancelled,completed',
+            'status' => 'required|in:pending,booked ,cancelled,completed',
         ]);
+
         $status = $request->status;
 
+        // Check if the appointment is already completed and cannot be modified
         if ($appointment->status === 'completed' && $request->status !== 'completed') {
             return redirect()->route('appointments.index')->with('error', 'This appointment is already completed and cannot be modified.');
         }
 
+        // Call the appropriate method in AppointmentHelper based on the status
         switch ($status) {
             case 'pending':
-                $appointment->status = 'pending';
-
-                $appointmentInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
-                    ->where('date', $appointment->date)
-                    ->where('start_time', $appointment->start_time)
-                    ->where('end_time', $appointment->end_time)
-                    ->where('status', 'booked')
-                    ->first();
-                if ($appointmentInfo) {
-                    return redirect()->route('appointments.index')->with('error', 'This time slot is already booked');
-                }
+                $response = $this->appointmentHelper->handlePending($appointment, $status, $appointmentSlot);
                 break;
+
             case 'booked':
-                $appointment->status = 'booked';
-                $appointmentSlot->status = 'booked';
-                $appointmentSlot->start_time = $appointment->start_time;
-                $appointmentSlot->doctor_id = $appointment->doctor_id;
-                $appointmentSlot->end_time = $appointment->end_time;
-                $appointmentSlot->date = $appointment->date;
+                $response = $this->appointmentHelper->handleBooked($appointment, $appointmentSlot, $status);
+                break;
 
-                $doctorInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
-                    ->where('date', $appointment->date)
-                    ->where('start_time', $appointment->start_time)
-                    ->where('end_time', $appointment->end_time)
-                    ->where('status', 'booked')
-                    ->first();
-                if ($doctorInfo) {
-                    return redirect()->route('appointments.index')->with('error', 'This time slot is already booked');
-                } else {
-                    $appointmentSlot->save();
-                }
-                break;
-            case 'rescheduled':
-                $appointment->status = 'rescheduled';
-                break;
             case 'cancelled':
-                $appointment->status = 'cancelled';
-
-                $appointmentSlot = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
-                    ->where('date', $appointment->date)
-                    ->where('start_time', $appointment->start_time)
-                    ->where('end_time', $appointment->end_time)
-                    ->first();
-
-                if ($appointmentSlot) {
-                    $appointmentSlot->delete();
-                }
-
-                $appointment->delete();
-
-                return redirect()->route('appointments.index')->with('success', 'Appointment cancelled successfully');
+                $response = $this->appointmentHelper->handleCancelled($appointment, $appointmentSlot, $status);
                 break;
 
             case 'completed':
-                if ($appointment->status !== 'completed') {
-                    // Mark the appointment as completed
-                    $appointment->status = 'completed';
-
-                    // Delete the corresponding appointment slot
-                    AppointmentSlot::where('doctor_id', $appointment->doctor_id)
-                        ->where('date', $appointment->date)
-                        ->where('start_time', $appointment->start_time)
-                        ->where('end_time', $appointment->end_time)
-                        ->delete();
-                }
-                if (!$appointment->reviews) {
-                    return back()->with('error', 'Please add review first');
-                }
-
-                // Example start time and end time
-                $startTime = Carbon::parse($appointment->start_time);  // Doctor's shift start time
-                $endTime = Carbon::parse($appointment->end_time);    // Doctor's shift end time
-
-                // Calculate the duration in hours
-                $durationInHours = $startTime->diffInHours($endTime);
-
-                // Calculate the total fee
-                $totalFee = $durationInHours * $appointment->doctor->hourly_rate;
-
-                $payment = Payment::create([
-                    'appointment_id' => $appointment->id,
-                    'amount' => $totalFee,
-                    'patient_id' => $appointment->patient_id,
-                ]);
-
-                $firstReview = $appointment->reviews->first();
-                if (!$firstReview) {
-                    return back()->with('error', 'Doctor is yet to add review first');
-                }
-
-                PatientHistory::create([
-                    'appointment_id' => $appointment->id,
-                    'patient_id' => $appointment->patient_id,
-                    'doctor_id' => $appointment->doctor_id,
-                    'review_id' => $firstReview->id,
-                    'payment_id' => $payment->id,
-                ]);
-
-                $patient = Patient::find($appointment->patient_id);
-                $patientEmail = $patient->user->email;
-                Mail::to($patientEmail)->send(new AppointmentCompleteMail($appointment));
-
-                // After completing, redirect with a flag to show the review modal
-                $appointment->save();
-                return redirect()->route('appointments.index')->with('success', 'Appointment marked as completed')->with('showReviewModal', true);
+                $response = $this->appointmentHelper->handleCompleted($appointment, $status);
                 break;
+
             default:
                 $appointment->status = 'pending';
         }
+
+        // If there's a response (error), return it
+        if ($response) {
+            return redirect()->route('appointments.index')->with('error', $response);
+        }
+
+        // Save the appointment after status change
         $appointment->save();
         return redirect()->route('appointments.index')->with('success', 'Appointment status updated successfully');
     }

@@ -5,8 +5,10 @@ namespace App\Helper;
 use Carbon\Carbon;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Payment;
 use App\Models\Speciality;
 use App\Models\Appointment;
+use App\Models\PatientHistory;
 use App\Models\AppointmentSlot;
 use Illuminate\Support\Facades\Auth;
 
@@ -70,6 +72,33 @@ class AppointmentHelper
      * @return string|null The error message if the doctor is not available.
      */
 
+    // Function to check if both doctor and patient exist
+    public function userExist($doctor_id, $patient_id, $role)
+    {
+        // If user is an admin, both doctor and patient need to exist
+        if ($role == 'admin') {
+            $doctor = Doctor::where('id', $doctor_id)->first();
+            $patient = Patient::where('id', $patient_id)->first();
+
+            if ($doctor && $patient) {
+                return true;
+            }
+        }
+
+        // If user is a patient, only doctor needs to exist
+        if ($role == 'patient') {
+            $doctor = Doctor::where('id', $doctor_id)->first();
+            return $doctor;
+            if ($doctor) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
     public function checkDoctorAvailability($doctorId, $date, $startTime, $endTime)
     {
         // Check appointment conflicts
@@ -128,17 +157,121 @@ class AppointmentHelper
         $appointment->status = $data['status'] ?? 'pending';
         $appointment->save();
 
-        // Update appointment slots if needed
-        if (!empty($data['slot'])) {
-            $appointmentSlot = new AppointmentSlot();
-            $appointmentSlot->doctor_id = $data['doctor_id'];
-            $appointmentSlot->date = $data['date'];
-            $appointmentSlot->start_time = $data['start_time'];
-            $appointmentSlot->end_time = $data['end_time'];
-            $appointmentSlot->status = 'booked';
+
+        $appointmentSlot = new AppointmentSlot();
+        $appointmentSlot->doctor_id = $data['doctor_id'];
+        $appointmentSlot->date = $data['date'];
+        $appointmentSlot->start_time = $data['start_time'];
+        $appointmentSlot->end_time = $data['end_time'];
+        $appointmentSlot->status = 'booked';
+        $appointmentSlot->save();
+
+        return $appointment;
+    }
+
+    public function handlePending(Appointment $appointment, $status, $appointmentSlot)
+    {
+        $appointment->status = 'pending';
+
+        $appointmentInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+            ->where('date', $appointment->date)
+            ->where('start_time', $appointment->start_time)
+            ->where('end_time', $appointment->end_time)
+            ->where('status', 'booked')
+            ->first();
+
+        if ($appointmentInfo) {
+            return 'This time slot is already booked';
+        }
+
+        return null;
+    }
+
+    public function handleBooked(Appointment $appointment, AppointmentSlot $appointmentSlot, $status)
+    {
+        $appointment->status = 'booked';
+        $appointmentSlot->status = 'booked';
+        $appointmentSlot->start_time = $appointment->start_time;
+        $appointmentSlot->doctor_id = $appointment->doctor_id;
+        $appointmentSlot->end_time = $appointment->end_time;
+        $appointmentSlot->date = $appointment->date;
+
+        $doctorInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+            ->where('date', $appointment->date)
+            ->where('start_time', $appointment->start_time)
+            ->where('end_time', $appointment->end_time)
+            ->where('status', 'booked')
+            ->first();
+
+        if ($doctorInfo) {
+            return 'This time slot is already booked';
+        } else {
             $appointmentSlot->save();
         }
 
-        return $appointment;
+        return null;
+    }
+
+    public function handleCancelled(Appointment $appointment, AppointmentSlot $appointmentSlot, $status)
+    {
+        $appointment->status = 'cancelled';
+
+        $appointmentSlot = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+            ->where('date', $appointment->date)
+            ->where('start_time', $appointment->start_time)
+            ->where('end_time', $appointment->end_time)
+            ->first();
+
+        if ($appointmentSlot) {
+            $appointmentSlot->delete();
+        }
+
+        $appointment->delete();
+        return 'Appointment cancelled successfully';
+    }
+
+    public function handleCompleted(Appointment $appointment, $status)
+    {
+        if ($appointment->status !== 'completed') {
+            $appointment->status = 'completed';
+
+            AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+                ->where('date', $appointment->date)
+                ->where('start_time', $appointment->start_time)
+                ->where('end_time', $appointment->end_time)
+                ->delete();
+        }
+
+        if (!$appointment->reviews) {
+            return 'Please add review first';
+        }
+
+        // Calculate the duration and payment
+        $startTime = Carbon::parse($appointment->start_time);
+        $endTime = Carbon::parse($appointment->end_time);
+        $durationInHours = $startTime->diffInHours($endTime);
+        $totalFee = $durationInHours * $appointment->doctor->hourly_rate;
+
+        $payment = Payment::create([
+            'appointment_id' => $appointment->id,
+            'amount' => $totalFee,
+            'patient_id' => $appointment->patient_id,
+        ]);
+
+        $firstReview = $appointment->reviews->first();
+        if (!$firstReview) {
+            return 'Doctor is yet to add review first';
+        }
+
+        PatientHistory::create([
+            'appointment_id' => $appointment->id,
+            'patient_id' => $appointment->patient_id,
+            'doctor_id' => $appointment->doctor_id,
+            'review_id' => $firstReview->id,
+            'payment_id' => $payment->id,
+        ]);
+
+        $appointment->save();
+        // return 'Appointment marked as completed';
     }
 }
