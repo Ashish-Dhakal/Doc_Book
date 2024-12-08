@@ -26,6 +26,7 @@ Route::prefix('V1')->group(function () {
 
         // Auth Routes
         Route::post('logout', [App\Http\Controllers\Api\V1\Auth\AuthController::class, 'logout']);
+        Route::post('changePassword', [App\Http\Controllers\Api\V1\Auth\AuthController::class, 'changePassword']);
 
         //route name() prefix
 

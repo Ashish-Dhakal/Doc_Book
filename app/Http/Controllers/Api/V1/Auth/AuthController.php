@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 use App\Notifications\VerifyEmail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Api\V1\BaseController;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     public function register(Request $request)
     {
@@ -81,7 +83,7 @@ class AuthController extends Controller
                 'token' => $authUser->createToken('authToken')->plainTextToken,
                 'token_type' => 'bearer'
             ], 200);
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Email or password is incorrect',
@@ -89,13 +91,52 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $user = $request->user();
         $user->tokens()->delete();
         return response()->json([
-            'status' => true,  
+            'status' => true,
             'user' => $user,
             'message' => 'User logged out successfully',
         ], 200);
     }
+
+    public function changePassword(Request $request)
+    {
+        // Validate the request data
+        $validateAppointment = Validator::make($request->all(), [
+            'current_password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+    
+        // Check if validation fails
+        if ($validateAppointment->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validateAppointment->errors(),
+            ], 422);
+        }
+    
+        // Find the user
+        $user = Auth::user();
+        $id = $user->id;
+        $user = User::find($id);
+    
+        // Check if the current password is correct
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect',
+            ], 401);  // Use 401 Unauthorized for incorrect current password
+        }
+    
+        // Update password
+        $user->password = Hash::make($request->password);
+        $user->save();
+    
+        return response()->json([
+            'message' => 'Password changed successfully',
+        ], 200);  // 200 OK when the password is changed successfully
+    }
+    
 }
