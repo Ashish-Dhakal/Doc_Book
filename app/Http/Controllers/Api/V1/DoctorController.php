@@ -43,10 +43,10 @@ class DoctorController extends BaseController
        $validate = Validator::make($request->all(), [
            'f_name' => ['required', 'string', 'max:255'],
            'l_name' => ['required', 'string', 'max:255'],
-           'phone' => ['required', 'numeric' , 'digits: 10'],
+           'phone' => ['required', 'numeric', 'digits:10', 'regex:/^9[0-9]{9}$/'],
            'address' => ['required', 'string', 'max:255'],
            'age' => ['required', 'numeric'],
-           'gender' => ['required', 'string'],
+           'gender' => ['required', 'string','in:male,female,other'],
            'blood_group' => ['required', 'string'],
            'hourly_rate' => ['required', 'numeric'],
            'password' => ['required', 'string', 'min:8', 'confirmed'],

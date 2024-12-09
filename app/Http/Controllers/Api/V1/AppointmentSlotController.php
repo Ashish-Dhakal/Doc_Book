@@ -72,23 +72,34 @@ class AppointmentSlotController extends BaseController
     {
         // Validate the incoming data
         $validated = Validator::make($request->all(), [
-            'doctor_id' => ['required', 'exists:doctors,id', function ($attribute, $value, $fail) use ($request) {
-                // Only validate doctor_id if status is 'doctor'
-                if (Auth::user()->roles == 'admin' && empty($value)) {
-                    $fail($attribute . ' is required for admin.');
-                }
-            }],
-            'date' => 'required|date',
+            'doctor_id' => [
+                function ($attribute, $value, $fail) {
+                    // Check if the user is admin
+                    if (Auth::user()->roles == 'admin' && empty($value)) {
+                        $fail($attribute . ' is required for admin.');
+                    }
+                },
+                'exists:doctors,id' // Validate if it exists in the database
+            ],
+            'date' => 'required|date_format:Y-m-d|after_or_equal:today',
             'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
-            'status' => 'required|string',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'status' => 'required|string|in:unavailable',
         ]);
 
 
         // dd($request->doctor_id);
         // Check if validation failed
+        // if ($validated->fails()) {
+        //     return $this->errorResponse('Validation failed', $validated->errors()->all(), 422);
+        // }
+
         if ($validated->fails()) {
-            return $this->errorResponse('Validation failed', $validated->errors()->all());
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validated->errors()->all(),
+            ], 422); // Correct
         }
 
         // Get validated input
@@ -105,11 +116,11 @@ class AppointmentSlotController extends BaseController
 
         if (Auth::user()->roles == 'admin') {
             $doctor_id = $request->input('doctor_id');
-            $doctor = Doctor::where('user_id', $doctor_id)->first();
+            $doctor = Doctor::where('id', $doctor_id)->first();
             if (!$doctor) {
                 return $this->errorResponse('Doctor not found', 404);
             }
-        } else {
+        } elseif((Auth::user()->roles == 'doctor')) {
             $userId = Auth::user()->id;
             $doctor = Doctor::where('user_id', $userId)->first();
             $doctor_id = $doctor->id;
@@ -188,10 +199,10 @@ class AppointmentSlotController extends BaseController
                     $fail($attribute . ' is required for admin.');
                 }
             }],
-            'date' => 'required|date',
+            'date' => 'required|date_format:Y-m-d|after_or_equal:today',
             'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
-            'status' => 'required|string',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'status' => 'required|string|in:available,booked,unavailable',
         ]);
 
         // Check if validation failed

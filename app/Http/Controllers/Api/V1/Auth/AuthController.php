@@ -21,10 +21,10 @@ class AuthController extends BaseController
             'f_name' => ['required', 'string', 'max:255'],
             'l_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'numeric'],
+            'phone' => ['required', 'numeric', 'digits:10', 'regex:/^9[0-9]{9}$/'],
             'address' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'gender' => ['required'],
+            'gender' => ['required','in:male,female,other'],
             'age' => ['required', 'numeric'],
             'blood_group' => ['required'],
         ]);
@@ -49,7 +49,7 @@ class AuthController extends BaseController
             'password' => $request->password,
         ]);
 
-        $user->notify(new VerifyEmail($user));
+        // $user->notify(new VerifyEmail($user));
 
         Patient::create([
             'user_id' => $user->id,
@@ -57,8 +57,7 @@ class AuthController extends BaseController
 
         return response()->json([
             'status' => true,
-            'message' => 'User created successfully',
-            'user' => $user
+            'message' => 'You have registered successfully'
         ], 200);
     }
     public function login(Request $request)
