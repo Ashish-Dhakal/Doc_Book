@@ -53,6 +53,17 @@ class ReviewController extends BaseController
             'pdf' => 'nullable|mimes:pdf|max:10240',
         ]);
 
+        $userId = Auth::user()->id;
+        $doctorId = Doctor::where('user_id' , $userId)->first();
+        // $appointment = Appointment::where('doctor_id' ,$doctorId->id)
+        $appointmetn = Appointment::with('reviews')->where('doctor_id' , $doctorId->id)->first() ;
+        if(!$appointmetn){
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorize to review this patient',
+            ]); 
+        }
+
         if ($validateReview->fails()) {
             return response()->json([
                 'message' => 'Validation failed',

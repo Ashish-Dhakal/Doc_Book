@@ -20,7 +20,7 @@ class AuthController extends BaseController
         $validateUser = Validator::make($request->all(), [
             'f_name' => ['required', 'string', 'max:255'],
             'l_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email' , 'email:exists'],
             'phone' => ['required', 'numeric', 'digits:10', 'regex:/^9[0-9]{9}$/'],
             'address' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],

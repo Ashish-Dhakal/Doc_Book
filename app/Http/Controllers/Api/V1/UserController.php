@@ -78,14 +78,14 @@ class UserController extends BaseController
             'phone' => ['required', 'numeric', 'digits:10', 'regex:/^9[0-9]{9}$/'],
             'address' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'gender' => ['required','in:male,female,other'],
+            'gender' => ['required','in:male,female'],
             'age' => ['required', 'numeric'],
-            'roles' => ['required'],
+            'roles' => ['required','in:doctor,patient'],
             'blood_group' => ['required'],
         ]);
 
         if ($validateUser->fails()) {
-            return $this->errorResponse('Validation failed', $validateUser->errors()->all());
+            return $this->errorResponse($validateUser->errors());
         }
 
         $user = User::create([

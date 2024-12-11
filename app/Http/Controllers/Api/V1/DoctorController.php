@@ -16,24 +16,52 @@ class DoctorController extends BaseController
      */
     public function index()
     {
-        //
+        $userId = Auth::user()->id;
+        $user = User::find($userId);
+        $doctor = Doctor::where('user_id', $userId)->first();
+    
+        // Check if doctor exists
+        if (!$doctor) {
+            return response()->json([
+                'message' => 'Doctor not found.'
+            ], 404);
+        }
+    
+        return response()->json([
+            'doctor' => [
+                'id' => $doctor->id,
+                'user_id' => $doctor->user->user_id,
+                'f_name' => $doctor->user->f_name,
+                'l_name' => $doctor->user->l_name,
+                'email' => $doctor->user->email,
+                'phone' => $doctor->user->phone,
+                'address' => $doctor->user->address,
+                'hourly_rate' => $doctor->hourly_rate,
+                'speciality_id' => $doctor->speciality_id,
+                'speciality name' => $doctor->speciality->name,
+                'age' => $doctor->user->age,
+                'gender' => $doctor->user->gender,
+                'blood_group' => $doctor->user->blood_group
+            ]
+        ]);
     }
+    
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        //
-    }
+    // public function store(Request $request)
+    // {
+    //     //
+    // }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+    // /**
+    //  * Display the specified resource.
+    //  */
+    // public function show(string $id)
+    // {
+    //     //
+    // }
 
     /**
      * Update the specified resource in storage.

@@ -84,6 +84,17 @@ class AppointmentPolicy
             ($user->roles === 'patient' && $appointment->patient_id === $this->userId());
     }
 
+    public function statusUpdateComplete( User $user, Appointment $appointment)
+    {
+        return $user->roles === 'admin' ||
+        ($user->roles === 'doctor' && $appointment->doctor_id === $this->userId());
+
+    }
+    public function statusUpdate( User $user, Appointment $appointment)
+    {
+        return $user->roles === 'admin' ;
+    }
+
     /**
      * Determine if the user can delete an appointment.
      */

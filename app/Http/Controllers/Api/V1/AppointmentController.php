@@ -74,6 +74,11 @@ class AppointmentController extends BaseController
      */
     public function store(Request $request, AppointmentHelper $appointmentHelper)
     {
+        // $this->authorize('create', Appointment::class);
+        if(($this->authorize('create', Appointment::class)) === false){
+            return $this->errorResponse('unauthorize');
+        }
+        
         $validator = Validator::make($request->all(), [
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date_format:Y-m-d|after_or_equal:today',
@@ -99,7 +104,7 @@ class AppointmentController extends BaseController
             } elseif (Auth::user()->roles == 'patient') {
                 return $this->errorResponse('Doctor must exist');
             } else {
-                return $this->errorResponse('User does not exist');
+                return $this->errorResponse('Only admin and patient can create an appointment');
             }
         }
 
@@ -277,6 +282,9 @@ class AppointmentController extends BaseController
      */
     public function destroy(string $id)
     {
+
+        return $this->errorResponse('Appointment cannot be deleted');
+
         // Find the appointment by its ID
         $appointment = Appointment::find($id);
 
@@ -314,18 +322,25 @@ class AppointmentController extends BaseController
         // Call the appropriate method in AppointmentHelper based on the status
         switch ($status) {
             case 'pending':
+                $this->authorize('statusUpdate', $appointment);
                 $response = $this->appointmentHelper->handlePending($appointment, $status, $appointmentSlot);
                 break;
 
             case 'booked':
+                $this->authorize('statusUpdate', $appointment);
                 $response = $this->appointmentHelper->handleBooked($appointment, $appointmentSlot, $status);
                 break;
 
             case 'cancelled':
+                $this->authorize('statusUpdate', $appointment);
                 $response = $this->appointmentHelper->handleCancelled($appointment, $appointmentSlot, $status);
                 break;
 
             case 'completed':
+                $this->authorize('statusUpdateComplete', $appointment);
+                if($appointment->status === 'completed'){
+                    return $this->errorResponse('Appointment alerady completed');
+                }
                 $response = $this->appointmentHelper->handleCompleted($appointment, $status);
                 break;
 
