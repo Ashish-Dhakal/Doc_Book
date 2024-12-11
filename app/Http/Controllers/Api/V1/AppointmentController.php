@@ -15,8 +15,9 @@ use App\Models\AppointmentSlot;
 use App\Helper\AppointmentHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Gate;
 
+use Illuminate\Support\Facades\Mail;
 use function PHPUnit\Framework\isEmpty;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Api\V1\BaseController;
@@ -309,7 +310,7 @@ class AppointmentController extends BaseController
     public function updateStatus(Request $request, Appointment $appointment, AppointmentSlot $appointmentSlot)
     {
         $request->validate([
-            'status' => 'required|in:pending,booked ,cancelled,completed',
+            'status' => 'required|in:pending,booked,cancelled,completed',
         ]);
 
         $status = $request->status;
@@ -322,22 +323,34 @@ class AppointmentController extends BaseController
         // Call the appropriate method in AppointmentHelper based on the status
         switch ($status) {
             case 'pending':
-                $this->authorize('statusUpdate', $appointment);
+                if(Gate::denies('statusUpdate', $appointment)){
+                    return $this->errorResponse('You are not allowed to update this appointment');
+                };
                 $response = $this->appointmentHelper->handlePending($appointment, $status, $appointmentSlot);
                 break;
 
             case 'booked':
-                $this->authorize('statusUpdate', $appointment);
+                // $this->authorize('statusUpdate', $appointment);
+                if(Gate::denies('statusUpdate', $appointment)){
+                    return $this->errorResponse('You are not allowed to update this appointment');
+                };
                 $response = $this->appointmentHelper->handleBooked($appointment, $appointmentSlot, $status);
                 break;
 
             case 'cancelled':
-                $this->authorize('statusUpdate', $appointment);
+                if(Gate::denies('statusUpdate', $appointment)){
+                    return $this->errorResponse('You are not allowed to update this appointment');
+                };
+                if($appointment->status === 'booked'){
+                    return $this->errorResponse('Appointment alerady booked cannot canclled');
+                }
                 $response = $this->appointmentHelper->handleCancelled($appointment, $appointmentSlot, $status);
                 break;
 
             case 'completed':
-                $this->authorize('statusUpdateComplete', $appointment);
+                if(Gate::denies('statusUpdateComplete', $appointment)){
+                    return $this->errorResponse('You are not allowed to update this appointment');
+                };
                 if($appointment->status === 'completed'){
                     return $this->errorResponse('Appointment alerady completed');
                 }

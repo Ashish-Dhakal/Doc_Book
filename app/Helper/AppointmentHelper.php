@@ -187,27 +187,29 @@ class AppointmentHelper
         return null;
     }
 
-    public function handleBooked(Appointment $appointment, AppointmentSlot $appointmentSlot, $status)
+    public function handleBooked(Appointment $appointment)
+    // public function handleBooked(Appointment $appointment, AppointmentSlot $appointmentSlot, $status)
     {
         $appointment->status = 'booked';
-        $appointmentSlot->status = 'booked';
-        $appointmentSlot->start_time = $appointment->start_time;
-        $appointmentSlot->doctor_id = $appointment->doctor_id;
-        $appointmentSlot->end_time = $appointment->end_time;
-        $appointmentSlot->date = $appointment->date;
+        $appointment->save();
+        // $appointmentSlot->status = 'booked';
+        // $appointmentSlot->start_time = $appointment->start_time;
+        // $appointmentSlot->doctor_id = $appointment->doctor_id;
+        // $appointmentSlot->end_time = $appointment->end_time;
+        // $appointmentSlot->date = $appointment->date;
 
-        $doctorInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
-            ->where('date', $appointment->date)
-            ->where('start_time', $appointment->start_time)
-            ->where('end_time', $appointment->end_time)
-            ->where('status', 'booked')
-            ->first();
+        // $doctorInfo = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
+        //     ->where('date', $appointment->date)
+        //     ->where('start_time', $appointment->start_time)
+        //     ->where('end_time', $appointment->end_time)
+        //     ->where('status', 'booked')
+        //     ->first();
 
-        if ($doctorInfo) {
-            return 'This time slot is already booked';
-        } else {
-            $appointmentSlot->save();
-        }
+        // if ($doctorInfo) {
+        //     return 'This time slot is already booked';
+        // } else {
+        //     $appointmentSlot->save();
+        // }
 
         return null;
     }
